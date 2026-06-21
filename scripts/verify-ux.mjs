@@ -1,7 +1,7 @@
-// Verifies the two UX changes:
-//   (1) selecting a node must NOT move the graph scroll
-//   (2) the toolbar search must FILTER the graph
-// Run from app/ with the dev server listening:  node scripts/verify-ux.mjs
+// 두 UX 변경 검증:
+//   (1) 노드 선택이 그래프 스크롤을 움직이면 안 됨
+//   (2) 툴바 검색이 그래프를 필터링해야 함
+// dev 서버가 떠 있는 상태에서 app/ 에서 실행:  node scripts/verify-ux.mjs
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
@@ -22,7 +22,7 @@ await page.waitForSelector("svg g.node");
 
 const nodeFull = await page.locator("svg g.node").count();
 
-// ---- REQUEST 2: toolbar search filters the graph ----
+// ---- 요청 2: 툴바 검색이 그래프를 필터링 ----
 const search = page.locator(".toolbar input[type=search]");
 await search.fill("billing");
 await page.waitForTimeout(300);
@@ -31,7 +31,7 @@ const matchCount = await page.locator("svg g.node.match").count();
 const linkFiltered = await page.locator("svg path.link").count();
 await page.screenshot({ path: `${OUT}/06-search-billing.png`, fullPage: true });
 
-// zero-result case → empty graph + message
+// 결과 0건 → 빈 그래프 + 메시지
 await search.fill("zzzznotfound");
 await page.waitForTimeout(200);
 const nodeZero = await page.locator("svg g.node").count();
@@ -40,14 +40,14 @@ const emptyMsg = await page
   .count();
 await page.screenshot({ path: `${OUT}/07-search-empty.png`, fullPage: true });
 
-await search.fill(""); // clear → full graph restored
+await search.fill(""); // 비우기 → 전체 그래프 복원
 await page.waitForTimeout(200);
 const nodeRestored = await page.locator("svg g.node").count();
 
-// ---- REQUEST 1: selection does not move the graph scroll ----
+// ---- 요청 1: 선택은 그래프 스크롤을 움직이지 않음 ----
 const scroll = page.locator(".graph-scroll");
 
-// (a) selecting via a TABLE ROW used to force graph scrollTop=0
+// (a) 테이블 행으로 선택하면 예전엔 그래프 scrollTop=0으로 강제됐음
 await scroll.evaluate((el) => (el.scrollTop = 1200));
 await page.waitForTimeout(100);
 const beforeScrollTable = await scroll.evaluate((el) => el.scrollTop);
@@ -57,7 +57,7 @@ const afterScrollTable = await scroll.evaluate((el) => el.scrollTop);
 const selAfterTable = await page.locator("svg g.node.sel").count();
 await page.screenshot({ path: `${OUT}/08-select-keeps-scroll.png`, fullPage: true });
 
-// (b) clicking a graph node in view keeps scroll + still highlights
+// (b) 보이는 그래프 노드 클릭 시 스크롤 유지 + 하이라이트는 정상
 await scroll.evaluate((el) => (el.scrollTop = 700));
 const beforeScrollNode = await scroll.evaluate((el) => el.scrollTop);
 const clicked = await page.evaluate(() => {
@@ -76,11 +76,10 @@ await page.waitForTimeout(200);
 const afterScrollNode = await scroll.evaluate((el) => el.scrollTop);
 const selAfterNode = await page.locator("svg g.node.sel").count();
 
-// ---- interaction: select a node THEN search — filtered matches must NOT be
-// dimmed by the stale selection (the major review finding) ----
+// ---- 상호작용: 노드 선택 후 검색 — 필터된 매칭이 남은 선택 때문에 dim되면 안 됨 (주요 리뷰 발견 사항) ----
 await search.fill("");
 await page.waitForTimeout(100);
-await page.locator("table tbody tr").first().click(); // make a selection
+await page.locator("table tbody tr").first().click(); // 선택 하나 만들기
 await page.waitForTimeout(150);
 const selBeforeSearch = await page.locator("svg g.node.sel").count();
 await search.fill("billing");

@@ -33,33 +33,6 @@ npm run typecheck  # tsc 타입 검사 (빌드는 esbuild라 타입체크 별도
 
 > 스키마: `{ generatedAt, platforms, stats, endpoints[], screens[], edges[] }`
 
-## 구조
-
-```
-app/
-  index.html              Vite 엔트리 (#root)
-  vite.config.ts          plugin-react · base './'
-  scripts/
-    ensure-data.mjs       data.json 없으면 data.sample.json 복사 (predev/prebuild)
-    verify-*.mjs          Playwright 동작 검증 스크립트
-  src/
-    main.tsx              ReactDOM 부트스트랩 + styles.css
-    App.tsx               전역 상태(검색·플랫폼필터·선택·테이블탭) + 레이아웃
-    types.ts              AppData / Endpoint / Screen / Edge / Selection 타입
-    constants.ts          PLATFORMS · PLABEL · PCOLOR · methodCls · trunc
-    data.ts               ./data.json import → D, epById, screenById
-    data.json             실제 데이터 (gitignored)
-    data.sample.json      가짜 샘플 데이터 (committed)
-    styles.css            전역 스타일
-    components/
-      Header.tsx           헤더 + 통계 칩
-      Toolbar.tsx          검색 + 플랫폼 필터
-      Graph.tsx            이분 SVG 의존성 그래프(반응형 폭 · 펼치기/접기 높이)
-      DetailPanel.tsx      엔드포인트/화면 상세·영향 분석
-      Tables.tsx           화면→API / API→화면 / 플랫폼 커버리지 3탭
-      shared.tsx           PlatDots · PlatCell 공용 헬퍼
-```
-
 ## 동작 메모
 
 - 그래프는 선언형 JSX SVG. 레이아웃은 `useMemo`로 계산하고 강조(선택/검색)는 렌더타임 className.

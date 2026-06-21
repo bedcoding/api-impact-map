@@ -1,7 +1,7 @@
 import type { Platform } from "../types";
 import { PLABEL, PCOLOR, PLATFORMS } from "../constants";
 
-/** Inline colored dots for the platforms a thing belongs to (detail panel). */
+/** 항목이 속한 플랫폼을 색 점으로 표시 (상세 패널용). */
 export function PlatDots({ plats }: { plats: Platform[] }) {
   return (
     <span className="platdots">
@@ -17,7 +17,7 @@ export function PlatDots({ plats }: { plats: Platform[] }) {
   );
 }
 
-/** P / A / W on-off boxes used in the tables. */
+/** 표에서 쓰는 P / A / W on-off 박스. */
 export function PlatCell({ plats }: { plats: Platform[] }) {
   return (
     <span className="pcell">

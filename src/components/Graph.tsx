@@ -20,8 +20,8 @@ const PAD_BOT = 16;
 const EP_W = 320;
 const SCR_W = 250;
 const EP_X = 14;
-const GUTTER = 14; // right inset of the screen column
-const MIN_W = 660; // floor so the two columns never overlap on a narrow panel
+const GUTTER = 14; // 화면 컬럼 우측 여백
+const MIN_W = 660; // 좁은 패널에서도 두 컬럼이 안 겹치게 하는 최소 폭
 const NODE_STROKE = "#475569";
 
 interface NodeRowProps {
@@ -82,8 +82,7 @@ export function Graph({
 }: Props) {
   const q = query.trim().toLowerCase();
 
-  // Measure the scroll container so the SVG fills its exact inner width — no
-  // horizontal scrollbar, and the screen column always hugs the right edge.
+  // 스크롤 컨테이너 폭을 측정해 SVG가 안쪽 폭을 정확히 채우게 함 — 가로 스크롤 없고, 화면 컬럼이 항상 오른쪽 끝에 붙음.
   const scrollRef = useRef<HTMLDivElement>(null);
   const [boxW, setBoxW] = useState(0);
   useLayoutEffect(() => {
@@ -96,13 +95,10 @@ export function Graph({
     return () => ro.disconnect();
   }, []);
 
-  // Layout = which nodes are visible + their positions. Visibility depends on the
-  // platform filter (activeEdges) and the search query:
-  //   - no query  → every node that has at least one active edge (full graph)
-  //   - query     → nodes whose label matches, PLUS their directly-connected
-  //                 (1-hop) neighbours.
-  // Selection does NOT affect layout — selecting only re-styles nodes in place,
-  // so the scroll position and node order never jump.
+  // 레이아웃 = 어떤 노드가 보이나 + 그 위치. 가시성은 플랫폼 필터(activeEdges)와 검색어에 따라 결정:
+  //   - 검색 없음 → active edge가 하나라도 있는 모든 노드(전체 그래프)
+  //   - 검색 있음 → 라벨이 매칭되는 노드 + 그에 직접 연결된 (1-hop) 이웃.
+  // 선택은 레이아웃에 영향 없음 — 선택은 제자리에서 스타일만 바꿈 → 스크롤 위치와 노드 순서가 안 튐.
   const layout = useMemo(() => {
     const epsLive = new Set<string>();
     const scrLive = new Set<string>();
@@ -111,7 +107,7 @@ export function Graph({
       scrLive.add(e.screen);
     });
 
-    // Direct text matches (within the platform-filtered set).
+    // 직접 텍스트 매칭 (플랫폼 필터된 집합 내).
     const matchEp = new Set<string>();
     const matchScr = new Set<string>();
     if (q) {
@@ -130,12 +126,11 @@ export function Graph({
       });
     }
 
-    // Visible sets.
+    // 보이는 집합.
     let visEps: Set<string>;
     let visScr: Set<string>;
     if (!q) {
-      // No search → show every live node. Read-only alias of the live sets
-      // (never mutated below in this branch).
+      // 검색 없음 → 모든 live 노드 표시. live 집합의 읽기 전용 별칭 (이 분기에서는 변경하지 않음).
       visEps = epsLive;
       visScr = scrLive;
     } else {
@@ -154,7 +149,7 @@ export function Graph({
       .filter((s) => visScr.has(s.id))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    // Width fits the container exactly (fallback to MIN_W before first measure).
+    // 컨테이너에 폭을 정확히 맞춤 (첫 측정 전엔 MIN_W로 대체).
     const W = Math.max(boxW || MIN_W, MIN_W);
     const scrLeft = W - GUTTER - SCR_W;
 
@@ -170,9 +165,7 @@ export function Graph({
     const x1 = EP_X + EP_W;
     const x2 = scrLeft;
     const dx = (x2 - x1) * 0.45;
-    // Draw every active edge whose BOTH endpoints are visible. (We don't add an
-    // extra "incident to a match" filter — that would hide a real dependency
-    // between two shown neighbour nodes, leaving the subgraph inconsistent.)
+    // 양쪽 끝이 모두 보이는 active edge를 전부 그림. ("매칭에 인접한 것만" 같은 추가 필터는 두지 않음 — 그러면 보이는 두 이웃 노드 사이의 실제 의존이 숨겨져 부분 그래프가 일관성을 잃음.)
     const links = activeEdges
       .filter((e) => epY.has(e.endpoint) && scrY.has(e.screen))
       .map((e, i) => {
@@ -190,8 +183,7 @@ export function Graph({
     return { endpoints, screens, epY, scrY, total, links, matchEp, matchScr, W, scrLeft };
   }, [activeEdges, q, boxW]);
 
-  // Related set for selection highlight (kept separate from layout so selecting
-  // never recomputes positions).
+  // 선택 하이라이트용 관련 집합 (레이아웃과 분리 → 선택해도 위치 재계산 안 함).
   const related = useMemo(() => {
     if (!selected) return null;
     const rel = new Set<string>([selected.type + ":" + selected.id]);
@@ -207,10 +199,7 @@ export function Graph({
     return rel;
   }, [activeEdges, selected]);
 
-  // While a search is active the filter IS the focus, so selection styling
-  // (sel/dim/active) is suppressed — otherwise a pre-existing selection would
-  // dim the filtered matches to ~12% opacity. Selection state is kept, so
-  // clearing the search restores it (and the detail panel still reflects it).
+  // 검색 중에는 필터가 곧 포커스라 선택 스타일(sel/dim/active)을 억제 — 안 그러면 기존 선택이 필터된 매칭을 ~12% 투명도로 dim 처리해버림. 선택 상태는 유지되므로 검색을 지우면 복원됨(상세 패널도 계속 반영).
   const nodeClass = (type: "ep" | "screen", id: string, matched: boolean): string => {
     let cls = "node";
     if (matched) cls += " match";
@@ -233,7 +222,7 @@ export function Graph({
     return cls;
   };
 
-  // Header hint text.
+  // 헤더 힌트 텍스트.
   let hint = "";
   if (q) {
     hint = `검색 "${query.trim()}" · 엔드포인트 ${layout.endpoints.length} · 화면 ${layout.screens.length}`;

@@ -116,8 +116,8 @@ export function Tables({ tab, onTab, query, onQuery, activeEdges, onSelect }: Pr
       </table>
     );
   } else {
-    // platform coverage matrix: screens × which platforms implement them.
-    // Uses ALL edges (not platform-filtered) so the matrix is stable.
+    // 플랫폼 커버리지 매트릭스: 화면 × 어느 플랫폼에 구현됐나.
+    // 매트릭스 안정성을 위해 (플랫폼 필터 안 한) 전체 edge 사용.
     const rows = D.screens.filter(
       (s) => !q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q),
     );

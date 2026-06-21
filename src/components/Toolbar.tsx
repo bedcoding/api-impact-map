@@ -8,7 +8,7 @@ interface Props {
   onTogglePlatform: (p: Platform) => void;
 }
 
-/** Search box + platform toggle filter. */
+/** 검색창 + 플랫폼 토글 필터. */
 export function Toolbar({ query, onQuery, platforms, onTogglePlatform }: Props) {
   return (
     <div className="toolbar">

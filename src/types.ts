@@ -4,7 +4,7 @@ export interface Endpoint {
   id: string;
   method: string;
   path: string;
-  version: string; // "v1" | "v2" | "v3" | "other"
+  version: string; // 버전 — "v1" | "v2" | "v3" | "other"
   platforms: Platform[];
   screens: string[];
   displayPaths: string[];
@@ -43,7 +43,7 @@ export interface AppData {
   edges: Edge[];
 }
 
-/** Current selection in the graph / tables. */
+/** 그래프/표에서의 현재 선택. */
 export type Selection =
   | { type: "ep"; id: string }
   | { type: "screen"; id: string }

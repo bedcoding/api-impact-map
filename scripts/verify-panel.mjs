@@ -1,6 +1,5 @@
-// Verifies: clicking a node no longer shifts the layout (panel is fixed-height),
-// and the expand/collapse toggle resizes BOTH columns to equal height.
-// Run from app/ with the dev server listening:  node scripts/verify-panel.mjs
+// 검증: 노드 클릭이 레이아웃을 안 밀고(패널 고정 높이), 펼치기/접기 토글이 좌우 두 컬럼을 같은 높이로 리사이즈하는지.
+// dev 서버가 떠 있는 상태에서 app/ 에서 실행:  node scripts/verify-panel.mjs
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
@@ -28,13 +27,13 @@ const snap = () =>
   }));
 
 const beforeClick = await snap();
-// click a screen node (screens are rendered after endpoints) → fills the panel
+// 화면 노드 클릭(화면은 엔드포인트 뒤에 렌더됨) → 패널 채움
 await page.locator("svg g.node").last().click();
 await page.waitForTimeout(250);
 const afterClick = await snap();
 await page.screenshot({ path: `${OUT}/13-panel-compact.png`, fullPage: true });
 
-// expand → both columns grow together
+// 펼치기 → 두 컬럼이 같이 커짐
 await page.locator(".resize-toggle-bar").click();
 await page.waitForTimeout(300);
 const afterExpand = await snap();

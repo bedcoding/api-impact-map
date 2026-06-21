@@ -1,7 +1,6 @@
-// Ensures app/src/data.json exists before dev/build. The real data.json is
-// gitignored (internal API map), so on a fresh checkout it is missing — in that
-// case we seed it from the committed data.sample.json so the app still builds
-// and runs with safe placeholder data. Runs automatically via predev/prebuild.
+// dev/build 전에 app/src/data.json이 있는지 보장한다.
+// 실제 data.json은 gitignore됨(내부 API 맵)이라 막 클론하면 없음 — 그 경우 커밋된 data.sample.json을 복사해 채워서 가짜 데이터로라도 빌드·실행되게 한다.
+// predev/prebuild로 자동 실행.
 import { existsSync, copyFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 

@@ -11,7 +11,7 @@ interface Props {
   expanded: boolean;
 }
 
-// Match the graph card's measured heights so both columns' bottoms stay aligned.
+// 그래프 카드의 측정 높이에 맞춰 두 컬럼 바닥이 정렬되게 함.
 const COMPACT_H = 367;
 const EXPANDED_H = 747;
 

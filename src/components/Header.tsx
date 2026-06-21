@@ -1,6 +1,6 @@
 import { D } from "../data";
 
-/** Top dark header: title, subtitle, and the stats chips. */
+/** 상단 다크 헤더: 제목·부제·통계 칩. */
 export function Header() {
   const s = D.stats;
   const items: [string, number][] = [

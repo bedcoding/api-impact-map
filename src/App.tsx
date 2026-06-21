@@ -14,12 +14,10 @@ export default function App() {
   const [selected, setSelected] = useState<Selection>(null);
   const [tableTab, setTableTab] = useState<TableTab>("screen");
   const [tableQuery, setTableQuery] = useState("");
-  // One toggle resizes BOTH columns (graph + detail panel) together, so the
-  // workspace height never changes on node click → no layout jump.
+  // 토글 하나로 좌우(그래프+상세패널)를 같이 리사이즈 → 노드 클릭해도 워크스페이스 높이가 안 변해서 레이아웃이 안 들썩인다.
   const [expanded, setExpanded] = useState(false);
 
-  // Edges visible under the current platform filter — the single derived input
-  // shared by the graph, detail panel and tables.
+  // 현재 플랫폼 필터에서 보이는 edge — 그래프·상세패널·표가 공유하는 파생 입력.
   const activeEdges = useMemo(
     () => D.edges.filter((e) => platforms.has(e.platform)),
     [platforms],
@@ -30,7 +28,7 @@ export default function App() {
       const next = new Set(prev);
       if (next.has(p)) next.delete(p);
       else next.add(p);
-      if (next.size === 0) next.add(p); // never empty
+      if (next.size === 0) next.add(p); // 절대 빈 상태 안 됨
       return next;
     });
   };

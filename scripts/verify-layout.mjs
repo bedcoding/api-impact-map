@@ -1,6 +1,6 @@
-// Verifies: (1) graph SVG fits the container width (no horizontal scrollbar)
-//           (2) bottom toggle: starts compact (~half), 펼치기 grows it, 접기 shrinks.
-// Run from app/ with the dev server listening:  node scripts/verify-layout.mjs
+// 검증: (1) 그래프 SVG가 컨테이너 폭에 맞음(가로 스크롤 없음)
+//       (2) 하단 토글: 기본 컴팩트(~절반), 펼치기로 커지고 접기로 줄어듦.
+// dev 서버가 떠 있는 상태에서 app/ 에서 실행:  node scripts/verify-layout.mjs
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 

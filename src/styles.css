@@ -74,7 +74,7 @@ svg { display: block; }
 .panel {
   width: 392px; flex-shrink: 0; background: var(--panel);
   border: 1px solid var(--line); border-radius: 10px;
-  overflow: auto; transition: height .15s ease;  /* height set inline, synced with graph */
+  overflow: auto; transition: height .15s ease;  /* 높이는 인라인 지정, 그래프와 동기화 */
 }
 .panel .pbody { padding: 14px; }
 .panel .empty { color: var(--muted); line-height: 1.7; }
