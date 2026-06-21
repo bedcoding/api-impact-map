@@ -3,8 +3,9 @@ dist
 *.local
 .DS_Store
 
-# Real data — internal API map. Kept out of git; seeded from data.sample.json.
+# 실데이터 — 내부 API 맵. git에 올리지 않음(data.sample.json에서 시드됨).
 src/data.json
 
-# Local verification screenshots (contain real data)
+# 로컬 검증 스크린샷(실데이터 포함). 검증 스크립트는 제거했지만 디스크에 남은
+# 파일이 올라가지 않도록 무시 유지. 필요 없으면 scripts/shots/ 폴더를 직접 삭제.
 scripts/shots/
