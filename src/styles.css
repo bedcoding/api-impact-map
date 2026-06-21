@@ -42,9 +42,14 @@ main { padding: 16px 22px 40px; max-width: 1480px; margin: 0 auto; }
 .pfilter .dot { width: 8px; height: 8px; border-radius: 50%; }
 .pfilter label.off { opacity: .35; }
 .tip { color: var(--muted); font-size: 11px; }
-.workspace { display: flex; gap: 14px; align-items: flex-start; }
+/* 그래프 + 상세 + 펼치기 바를 감싸는 단일 카드. 안쪽 두 컬럼은 개별 테두리 없이
+   가운데 구분선으로만 나뉘고, 바깥 테두리·라운드는 이 박스가 담당한다. */
+.workspace-box {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; overflow: hidden;
+}
+.workspace { display: flex; }
 .graph-card {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
   flex: 1; min-width: 0; overflow: hidden;
 }
 .resize-toggle-bar {
@@ -55,6 +60,9 @@ main { padding: 16px 22px 40px; max-width: 1480px; margin: 0 auto; }
   cursor: pointer;
 }
 .resize-toggle-bar:hover { background: #f1f2ff; color: var(--accent); }
+/* 박스 안 전체 폭 푸터 토글 바: 위 컬럼들과는 base의 border-top으로 구분되고,
+   바닥 모서리는 바깥 박스(overflow:hidden)가 라운드 처리한다. */
+.workspace-toggle { border-radius: 0 0 10px 10px; }
 .card-head {
   padding: 9px 14px; border-bottom: 1px solid var(--line);
   font-weight: 600; font-size: 12px; display: flex; justify-content: space-between;
@@ -72,10 +80,11 @@ svg { display: block; }
 .link.active { stroke-width: 1.8; opacity: .9; }
 .col-label { font-size: 11px; font-weight: 700; fill: var(--muted); }
 .panel {
-  width: 392px; flex-shrink: 0; background: var(--panel);
-  border: 1px solid var(--line); border-radius: 10px;
-  overflow: auto; transition: height .15s ease;  /* 높이는 인라인 지정, 그래프와 동기화 */
+  width: 392px; flex-shrink: 0;
+  border-left: 1px solid var(--line);  /* 그래프와 상세 사이 구분선 */
+  overflow: hidden;
 }
+.pscroll { overflow: auto; transition: height .15s ease; }  /* 헤더 고정, 본문만 스크롤 (그래프 카드와 동일) */
 .panel .pbody { padding: 14px; }
 .panel .empty { color: var(--muted); line-height: 1.7; }
 .ptitle { font-size: 15px; font-weight: 700; margin: 0 0 4px; word-break: break-all; }

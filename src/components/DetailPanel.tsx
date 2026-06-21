@@ -11,27 +11,27 @@ interface Props {
   expanded: boolean;
 }
 
-// 그래프 카드의 측정 높이에 맞춰 두 컬럼 바닥이 정렬되게 함.
-const COMPACT_H = 367;
-const EXPANDED_H = 747;
-
 export function DetailPanel({ selected, activeEdges, platforms, onSelect, expanded }: Props) {
+  // 헤더(상세/영향 분석)는 고정하고 본문만 스크롤 — 좌측 그래프 카드와 동일한 구조.
+  // 본문 높이(300/680)도 그래프 스크롤과 같은 값이라 두 카드 바닥이 자동으로 정렬된다.
   return (
-    <div className="panel" style={{ height: expanded ? EXPANDED_H : COMPACT_H }}>
+    <div className="panel">
       <div className="card-head">상세 / 영향 분석</div>
-      <div className="pbody">
-        {!selected ? (
-          <Empty />
-        ) : selected.type === "ep" ? (
-          <EpPanel id={selected.id} activeEdges={activeEdges} onSelect={onSelect} />
-        ) : (
-          <ScreenPanel
-            id={selected.id}
-            activeEdges={activeEdges}
-            platforms={platforms}
-            onSelect={onSelect}
-          />
-        )}
+      <div className="pscroll" style={{ height: expanded ? 680 : 300 }}>
+        <div className="pbody">
+          {!selected ? (
+            <Empty />
+          ) : selected.type === "ep" ? (
+            <EpPanel id={selected.id} activeEdges={activeEdges} onSelect={onSelect} />
+          ) : (
+            <ScreenPanel
+              id={selected.id}
+              activeEdges={activeEdges}
+              platforms={platforms}
+              onSelect={onSelect}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

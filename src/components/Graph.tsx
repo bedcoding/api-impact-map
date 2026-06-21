@@ -11,7 +11,6 @@ interface Props {
   onSelect: (type: "ep" | "screen", id: string) => void;
   onClear: () => void;
   expanded: boolean;
-  onToggleExpanded: () => void;
 }
 
 const ROW_H = 26;
@@ -78,7 +77,6 @@ export function Graph({
   onSelect,
   onClear,
   expanded,
-  onToggleExpanded,
 }: Props) {
   const q = query.trim().toLowerCase();
 
@@ -319,14 +317,6 @@ export function Graph({
           ))}
         </svg>
       </div>
-      <button
-        type="button"
-        className="resize-toggle-bar"
-        onClick={onToggleExpanded}
-        aria-expanded={expanded}
-      >
-        {expanded ? "접기 ▲" : "펼치기 ▼"}
-      </button>
     </div>
   );
 }

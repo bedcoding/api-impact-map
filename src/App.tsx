@@ -46,24 +46,35 @@ export default function App() {
           platforms={platforms}
           onTogglePlatform={togglePlatform}
         />
-        <div className="workspace">
-          <Graph
-            activeEdges={activeEdges}
-            platforms={platforms}
-            query={query}
-            selected={selected}
-            onSelect={onSelect}
-            onClear={onClear}
-            expanded={expanded}
-            onToggleExpanded={() => setExpanded((v) => !v)}
-          />
-          <DetailPanel
-            selected={selected}
-            activeEdges={activeEdges}
-            platforms={platforms}
-            onSelect={onSelect}
-            expanded={expanded}
-          />
+        {/* 그래프 + 상세 패널 + 펼치기 바를 한 박스로 묶는다. 펼치기는 둘 다에
+            적용되므로, 바를 이 박스의 푸터로 둬서 '같은 영역 소속'임을 드러낸다. */}
+        <div className="workspace-box">
+          <div className="workspace">
+            <Graph
+              activeEdges={activeEdges}
+              platforms={platforms}
+              query={query}
+              selected={selected}
+              onSelect={onSelect}
+              onClear={onClear}
+              expanded={expanded}
+            />
+            <DetailPanel
+              selected={selected}
+              activeEdges={activeEdges}
+              platforms={platforms}
+              onSelect={onSelect}
+              expanded={expanded}
+            />
+          </div>
+          <button
+            type="button"
+            className="resize-toggle-bar workspace-toggle"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+          >
+            {expanded ? "접기 ▲" : "펼치기 ▼"}
+          </button>
         </div>
         <Tables
           tab={tableTab}
