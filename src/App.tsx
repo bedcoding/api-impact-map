@@ -1,14 +1,22 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Platform, Selection, TableTab } from "./types";
-import { D } from "./data";
+import { indexData } from "./data";
+import { useDatasets } from "./datasets";
+import { DataContext } from "./dataContext";
 import { PLATFORMS } from "./constants";
 import { Header } from "./components/Header";
+import { DataControls } from "./components/DataControls";
 import { Toolbar } from "./components/Toolbar";
 import { Graph } from "./components/Graph";
 import { DetailPanel } from "./components/DetailPanel";
 import { Tables } from "./components/Tables";
 
 export default function App() {
+  // 데이터셋(번들 + 업로드 스냅샷) 관리. active 가 현재 화면에 쓰이는 데이터.
+  const datasets = useDatasets();
+  const data = datasets.active;
+  const { epById, screenById } = useMemo(() => indexData(data), [data]);
+
   const [query, setQuery] = useState("");
   const [platforms, setPlatforms] = useState<Set<Platform>>(new Set(PLATFORMS));
   const [selected, setSelected] = useState<Selection>(null);
@@ -17,10 +25,13 @@ export default function App() {
   // 토글 하나로 좌우(그래프+상세패널)를 같이 리사이즈 → 노드 클릭해도 워크스페이스 높이가 안 변해서 레이아웃이 안 들썩인다.
   const [expanded, setExpanded] = useState(false);
 
+  // 데이터셋을 바꾸면 이전 선택이 새 데이터셋엔 없을 수 있으니 선택을 해제한다.
+  useEffect(() => setSelected(null), [data]);
+
   // 현재 플랫폼 필터에서 보이는 edge — 그래프·상세패널·표가 공유하는 파생 입력.
   const activeEdges = useMemo(
-    () => D.edges.filter((e) => platforms.has(e.platform)),
-    [platforms],
+    () => data.edges.filter((e) => platforms.has(e.platform)),
+    [data, platforms],
   );
 
   const togglePlatform = (p: Platform) => {
@@ -37,9 +48,10 @@ export default function App() {
   const onClear = () => setSelected(null);
 
   return (
-    <>
+    <DataContext.Provider value={{ data, epById, screenById }}>
       <Header />
       <main>
+        <DataControls ds={datasets} />
         <Toolbar
           query={query}
           onQuery={setQuery}
@@ -85,6 +97,6 @@ export default function App() {
           onSelect={onSelect}
         />
       </main>
-    </>
+    </DataContext.Provider>
   );
 }

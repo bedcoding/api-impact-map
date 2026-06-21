@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Edge, Platform, Selection } from "../types";
-import { D } from "../data";
+import { useData } from "../dataContext";
 import { PCOLOR, trunc } from "../constants";
 
 interface Props {
@@ -78,6 +78,7 @@ export function Graph({
   onClear,
   expanded,
 }: Props) {
+  const { data } = useData();
   const q = query.trim().toLowerCase();
 
   // 스크롤 컨테이너 폭을 측정해 SVG가 안쪽 폭을 정확히 채우게 함 — 가로 스크롤 없고, 화면 컬럼이 항상 오른쪽 끝에 붙음.
@@ -109,12 +110,12 @@ export function Graph({
     const matchEp = new Set<string>();
     const matchScr = new Set<string>();
     if (q) {
-      D.endpoints.forEach((a) => {
+      data.endpoints.forEach((a) => {
         if (epsLive.has(a.id) && `${a.method} ${a.path}`.toLowerCase().includes(q)) {
           matchEp.add(a.id);
         }
       });
-      D.screens.forEach((s) => {
+      data.screens.forEach((s) => {
         if (
           scrLive.has(s.id) &&
           (s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q))
@@ -140,10 +141,10 @@ export function Graph({
       });
     }
 
-    const endpoints = D.endpoints
+    const endpoints = data.endpoints
       .filter((a) => visEps.has(a.id))
       .sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method));
-    const screens = D.screens
+    const screens = data.screens
       .filter((s) => visScr.has(s.id))
       .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -179,7 +180,7 @@ export function Graph({
       });
 
     return { endpoints, screens, epY, scrY, total, links, matchEp, matchScr, W, scrLeft };
-  }, [activeEdges, q, boxW]);
+  }, [activeEdges, q, boxW, data]);
 
   // 선택 하이라이트용 관련 집합 (레이아웃과 분리 → 선택해도 위치 재계산 안 함).
   const related = useMemo(() => {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Edge, Platform, TableTab } from "../types";
-import { D } from "../data";
+import { useData } from "../dataContext";
 import { PLABEL, PLATFORMS, methodCls } from "../constants";
 import { PlatCell } from "./shared";
 
@@ -20,6 +20,7 @@ const TABS: [TableTab, string][] = [
 ];
 
 export function Tables({ tab, onTab, query, onQuery, activeEdges, onSelect }: Props) {
+  const { data } = useData();
   const q = query.trim().toLowerCase();
 
   const live = useMemo(() => {
@@ -36,7 +37,7 @@ export function Tables({ tab, onTab, query, onQuery, activeEdges, onSelect }: Pr
   let body: React.ReactNode = null;
 
   if (tab === "screen") {
-    const rows = D.screens
+    const rows = data.screens
       .filter((s) => live.scr.has(s.id))
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q));
     rowCount = rows.length;
@@ -74,7 +75,7 @@ export function Tables({ tab, onTab, query, onQuery, activeEdges, onSelect }: Pr
       </table>
     );
   } else if (tab === "api") {
-    const rows = D.endpoints
+    const rows = data.endpoints
       .filter((a) => live.eps.has(a.id))
       .filter((a) => !q || a.path.toLowerCase().includes(q) || a.method.toLowerCase().includes(q));
     rowCount = rows.length;
@@ -118,7 +119,7 @@ export function Tables({ tab, onTab, query, onQuery, activeEdges, onSelect }: Pr
   } else {
     // 플랫폼 커버리지 매트릭스: 화면 × 어느 플랫폼에 구현됐나.
     // 매트릭스 안정성을 위해 (플랫폼 필터 안 한) 전체 edge 사용.
-    const rows = D.screens.filter(
+    const rows = data.screens.filter(
       (s) => !q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q),
     );
     rowCount = rows.length;
@@ -140,7 +141,7 @@ export function Tables({ tab, onTab, query, onQuery, activeEdges, onSelect }: Pr
           {rows.map((s) => {
             const cnt = (p: Platform) =>
               new Set(
-                D.edges
+                data.edges
                   .filter((e) => e.screen === s.id && e.platform === p)
                   .map((e) => e.endpoint),
               ).size;

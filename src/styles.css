@@ -42,6 +42,28 @@ main { padding: 16px 22px 40px; max-width: 1480px; margin: 0 auto; }
 .pfilter .dot { width: 8px; height: 8px; border-radius: 50%; }
 .pfilter label.off { opacity: .35; }
 .tip { color: var(--muted); font-size: 11px; }
+/* 데이터 스냅샷 바: 생성일 선택 + JSON 내려받기/올리기 */
+.databar {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 14px; display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap; margin-bottom: 14px;
+}
+.databar-label { font-weight: 700; font-size: 12px; }
+.databar select {
+  border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px;
+  font-size: 12px; outline: none; background: #fff; cursor: pointer; max-width: 360px;
+}
+.databar select:focus { border-color: var(--accent); }
+.databar-note { font-size: 11px; color: var(--muted); }
+.databar-note.err { color: var(--warn); }
+.databar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.db-btn {
+  border: 1px solid var(--line); border-radius: 7px; background: #fff;
+  padding: 6px 11px; font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer;
+}
+.db-btn:hover { background: #f1f2ff; border-color: var(--accent); color: var(--accent); }
+.db-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.db-btn.primary:hover { background: #4338ca; color: #fff; }
 /* 그래프 + 상세 + 펼치기 바를 감싸는 단일 카드. 안쪽 두 컬럼은 개별 테두리 없이
    가운데 구분선으로만 나뉘고, 바깥 테두리·라운드는 이 박스가 담당한다. */
 .workspace-box {

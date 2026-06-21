@@ -1,5 +1,5 @@
 import type { Edge, Platform, Selection } from "../types";
-import { epById, screenById } from "../data";
+import { useData } from "../dataContext";
 import { PLABEL, PLATFORMS, methodCls } from "../constants";
 import { PlatDots } from "./shared";
 
@@ -67,6 +67,7 @@ function EpPanel({
   activeEdges: Edge[];
   onSelect: (type: "ep" | "screen", id: string) => void;
 }) {
+  const { epById, screenById } = useData();
   const a = epById.get(id);
   if (!a) return null;
   const edges = activeEdges.filter((e) => e.endpoint === id);
@@ -121,6 +122,7 @@ function ScreenPanel({
   platforms: Set<Platform>;
   onSelect: (type: "ep" | "screen", id: string) => void;
 }) {
+  const { epById, screenById } = useData();
   const s = screenById.get(id);
   if (!s) return null;
   const edges = activeEdges.filter((e) => e.screen === id);
@@ -134,9 +136,9 @@ function ScreenPanel({
 
       <div className="section-h">플랫폼별 화면 명</div>
       <ul className="plain">
-        {PLATFORMS.filter((p) => s.aliases[p]).map((p) => (
+        {PLATFORMS.filter((p) => s.aliases?.[p]).map((p) => (
           <li key={p}>
-            <span className={`badge ${p}`}>{PLABEL[p]}</span> {s.aliases[p]}
+            <span className={`badge ${p}`}>{PLABEL[p]}</span> {s.aliases?.[p]}
           </li>
         ))}
       </ul>

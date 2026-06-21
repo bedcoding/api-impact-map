@@ -1,8 +1,9 @@
-import { D } from "../data";
+import { useData } from "../dataContext";
 
 /** 상단 다크 헤더: 제목·부제·통계 칩. */
 export function Header() {
-  const s = D.stats;
+  const { data } = useData();
+  const s = data.stats;
   const items: [string, number][] = [
     ["화면", s.screens],
     ["엔드포인트", s.endpoints],
@@ -26,7 +27,7 @@ export function Header() {
           </div>
         ))}
         <div className="stat">
-          <span>생성 {D.generatedAt}</span>
+          <span>생성 {data.generatedAt}</span>
         </div>
       </div>
     </header>
