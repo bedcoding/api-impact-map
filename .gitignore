@@ -1,0 +1,10 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# Real data — internal API map. Kept out of git; seeded from data.sample.json.
+src/data.json
+
+# Local verification screenshots (contain real data)
+scripts/shots/

@@ -1,0 +1,27 @@
+{
+  "name": "api-impact-map",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "API ↔ 화면 영향도 맵 — 엔드포인트 변경 시 영향받는 화면을 플랫폼별로 시각화",
+  "scripts": {
+    "predev": "node scripts/ensure-data.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/ensure-data.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "playwright": "^1.61.0",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.8"
+  }
+}

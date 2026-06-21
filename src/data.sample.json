@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-01-01",
+  "platforms": ["ios", "android", "web"],
+  "stats": {
+    "screens": 4,
+    "endpoints": 3,
+    "edges": 11,
+    "iosScreens": 4,
+    "androidScreens": 2,
+    "webScreens": 3
+  },
+  "endpoints": [
+    {
+      "id": "GET /v1/sample/list",
+      "method": "GET",
+      "path": "/v1/sample/list",
+      "version": "v1",
+      "platforms": ["ios", "web"],
+      "screens": ["HOME", "LIST"],
+      "displayPaths": ["/v1/sample/list"]
+    },
+    {
+      "id": "POST /v1/sample/item",
+      "method": "POST",
+      "path": "/v1/sample/item",
+      "version": "v1",
+      "platforms": ["android"],
+      "screens": ["DETAIL"],
+      "displayPaths": ["/v1/sample/item"]
+    },
+    {
+      "id": "GET /v2/sample/detail",
+      "method": "GET",
+      "path": "/v2/sample/detail",
+      "version": "v2",
+      "platforms": ["ios", "android", "web"],
+      "screens": ["DETAIL", "HOME"],
+      "displayPaths": ["/v2/sample/detail"]
+    }
+  ],
+  "screens": [
+    {
+      "id": "DETAIL",
+      "code": "DETAIL",
+      "name": "상세",
+      "aliases": { "ios": "DetailViewController", "android": "DetailFragment", "web": "detail/index" },
+      "platforms": ["ios", "android", "web"],
+      "endpoints": ["GET /v2/sample/detail", "POST /v1/sample/item"]
+    },
+    {
+      "id": "HOME",
+      "code": "HOME",
+      "name": "홈",
+      "aliases": { "ios": "HomeViewController", "android": "HomeFragment", "web": "home/index" },
+      "platforms": ["ios", "android", "web"],
+      "endpoints": ["GET /v1/sample/list", "GET /v2/sample/detail"]
+    },
+    {
+      "id": "LIST",
+      "code": "LIST",
+      "name": "목록",
+      "aliases": { "ios": "ListViewController", "web": "list/index" },
+      "platforms": ["ios", "web"],
+      "endpoints": ["GET /v1/sample/list"]
+    },
+    {
+      "id": "SETTINGS",
+      "code": "SETTINGS",
+      "name": "설정",
+      "aliases": { "ios": "SettingsViewController" },
+      "platforms": ["ios"],
+      "endpoints": []
+    }
+  ],
+  "edges": [
+    { "screen": "HOME", "endpoint": "GET /v1/sample/list", "platform": "ios" },
+    { "screen": "HOME", "endpoint": "GET /v1/sample/list", "platform": "web" },
+    { "screen": "LIST", "endpoint": "GET /v1/sample/list", "platform": "ios" },
+    { "screen": "LIST", "endpoint": "GET /v1/sample/list", "platform": "web" },
+    { "screen": "DETAIL", "endpoint": "POST /v1/sample/item", "platform": "android" },
+    { "screen": "DETAIL", "endpoint": "GET /v2/sample/detail", "platform": "ios" },
+    { "screen": "DETAIL", "endpoint": "GET /v2/sample/detail", "platform": "android" },
+    { "screen": "DETAIL", "endpoint": "GET /v2/sample/detail", "platform": "web" },
+    { "screen": "HOME", "endpoint": "GET /v2/sample/detail", "platform": "ios" },
+    { "screen": "HOME", "endpoint": "GET /v2/sample/detail", "platform": "android" },
+    { "screen": "HOME", "endpoint": "GET /v2/sample/detail", "platform": "web" }
+  ]
+}

@@ -1,0 +1,12 @@
+import { chromium } from "playwright";
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1700, height: 900 } });
+await p.goto("http://localhost:5173/", { waitUntil: "load" });
+await p.waitForSelector("svg g.node");
+await p.waitForTimeout(300);
+const compact = await p.evaluate(() => document.querySelector(".graph-card").offsetHeight);
+await p.locator(".resize-toggle-bar").click();
+await p.waitForTimeout(350);
+const expanded = await p.evaluate(() => document.querySelector(".graph-card").offsetHeight);
+console.log(JSON.stringify({ graphCardCompact: compact, graphCardExpanded: expanded }));
+await b.close();
