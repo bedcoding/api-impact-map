@@ -173,3 +173,174 @@ tbody tr:hover { background: #f5f6ff; }
 .pcell .pb { width:18px; text-align:center; border-radius:4px; font-size:10px; font-weight:700; padding:1px 0; }
 .pcell .pb.on-ios { background:var(--ios); color:#fff; } .pcell .pb.on-android { background:var(--android); color:#fff; }
 .pcell .pb.on-web { background:var(--web); color:#fff; } .pcell .pb.off { background:#e5e7eb; color:#b6bcc6; }
+
+/* ───────────────────────── 뷰 전환 탭 (그래프 ↔ 리소스맵) ───────────────────────── */
+.viewtabs {
+  display: flex; gap: 6px; align-items: center;
+  background: #0c0d11; padding: 8px 22px;
+}
+.viewtabs-label {
+  font-size: 11px; font-weight: 700; color: #6b7280;
+  text-transform: uppercase; letter-spacing: .05em; margin-right: 6px;
+}
+.viewtabs a {
+  text-decoration: none; color: #c3c8d2; font-size: 12px; font-weight: 600;
+  padding: 6px 13px; border-radius: 999px; border: 1px solid #2a2d38;
+  display: inline-flex; gap: 6px; align-items: center;
+}
+.viewtabs a:hover { background: #1b1d25; color: #fff; }
+.viewtabs a.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.viewtabs-tag {
+  font-size: 9px; font-weight: 700; background: #21b573; color: #06281b;
+  padding: 1px 5px; border-radius: 4px;
+}
+
+/* ───────────────────────── 리소스맵 뷰 (AWS풍 다크 컬럼 드릴다운) ───────────────────────── */
+/* 라이트 앱 안의 "다크 캔버스" — AWS 콘솔의 리소스맵 패널과 동일한 구성. */
+.rmap {
+  background: #0b0e14; border: 1px solid #232a3a;
+  border-radius: 12px; overflow: hidden;
+}
+/* 다크 캔버스 상단 툴바 (축 토글 + 검색 + 플랫폼 필터) — 흰 띠 제거, 캔버스와 한 톤 */
+.rmap-toolbar {
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  padding: 10px 14px; border-bottom: 1px solid #1e2636; background: #11151f;
+}
+.rmap-search {
+  border: 1px solid #2c3445; border-radius: 7px; padding: 7px 10px;
+  font-size: 13px; width: 240px; outline: none; background: #1b2231; color: #dbe2ee;
+  margin-right: auto; /* 검색만 좌측, 플랫폼·축토글은 우측 그룹으로 밀어냄 */
+}
+.rmap-search::placeholder { color: #6b7385; }
+.rmap-search:focus { border-color: #3b82f6; }
+.rmap-toolbar .pfilter label { color: #cdd6e4; border-color: #2c3445; }
+.rmap-toolbar .pfilter label:hover { border-color: #3a455c; }
+.rmap-toolbar .pfilter label.off { opacity: .4; }
+/* 시작 축 토글 (화면부터 / API부터) — 다크 */
+.rmap-dir { display: inline-flex; border: 1px solid #2c3445; border-radius: 8px; overflow: hidden; }
+.rmap-dir button {
+  border: none; background: #1b2231; cursor: pointer;
+  padding: 6px 14px; font-size: 12px; font-weight: 700; color: #8b93a7;
+}
+.rmap-dir button + button { border-left: 1px solid #2c3445; }
+.rmap-dir button:hover { background: #232c3e; color: #dbe2ee; }
+.rmap-dir button.active { background: var(--accent); color: #fff; }
+
+/* 좌→우 컬럼 드릴다운. 컬럼 안의 도메인(내 서재·계정…)을 각각 독립 카드로 분리 → 컬럼>도메인 카드>노드 3단 깊이. */
+.rmap-cols-nav {
+  position: relative; /* 연결선 SVG 오버레이의 좌표 기준 */
+  display: flex; gap: 16px;
+  /* 헤더·툴바·여백을 뺀 나머지 높이를 채워 페이지 세로 스크롤(덜컹거림)을 없앤다 */
+  height: calc(100vh - 240px); min-height: 360px;
+  overflow-x: auto; overflow-y: hidden; padding: 16px; background: #0b0e14;
+}
+.rnav-col {
+  width: 300px; flex-shrink: 0; display: flex; flex-direction: column;
+  background: #0f131d; border: 1px solid #1e2636; border-radius: 12px; overflow: hidden;
+}
+/* 컬럼 헤더 = 묵직한 헤더가 아니라 가벼운 캡션 (헤더의 헤더 느낌 제거, 맥락은 유지) */
+.rnav-col-head {
+  flex-shrink: 0; padding: 11px 13px 7px;
+  font-weight: 600; font-size: 11px; color: #8b93a7; letter-spacing: .02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rnav-col-body { flex: 1; overflow-y: auto; padding: 10px; }
+.rnav-empty { padding: 24px 8px; text-align: center; color: #6b7385; font-size: 11.5px; }
+
+/* 도메인 = 독립 카드 */
+.rnav-group {
+  background: #182030; border: 1px solid #2a3346; border-radius: 10px;
+  padding: 8px; margin-bottom: 12px;
+}
+.rnav-group:last-child { margin-bottom: 0; }
+.rnav-group-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 3px 6px 8px; font-size: 11px; font-weight: 700; color: #c8d1e0;
+}
+.rnav-group-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rnav-group-count { flex-shrink: 0; background: #232d40; color: #aab3c5; border-radius: 999px; padding: 1px 8px; font-size: 10px; }
+.rnav-list { list-style: none; margin: 0; padding: 0; }
+
+/* 노드 = 도메인 카드 안 행 (평소 은은, 선택 시 파란 강조) */
+.rnav-item {
+  display: flex; gap: 7px; align-items: center; cursor: pointer;
+  padding: 6px 8px; margin-bottom: 2px; border-radius: 7px; border: 1px solid transparent;
+}
+.rnav-item:last-child { margin-bottom: 0; }
+.rnav-item:hover { background: #222c3e; }
+.rnav-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; color: #cdd6e4; }
+.rnav-item .codeline { color: #9fb3d1; }
+.rnav-item.sel { background: #16335f; border-color: #3b82f6; }
+.rnav-item.sel .rnav-label { color: #fff; }
+.rnav-item.sel .codeline { color: #cfe0ff; }
+
+/* 다크 캔버스용 스크롤바 커스텀 (기본 회색 스크롤바 대체) */
+.rmap-cols-nav, .rnav-col-body { scrollbar-width: thin; scrollbar-color: #2c3445 transparent; }
+.rmap-cols-nav::-webkit-scrollbar, .rnav-col-body::-webkit-scrollbar { width: 9px; height: 9px; }
+.rmap-cols-nav::-webkit-scrollbar-track, .rnav-col-body::-webkit-scrollbar-track { background: transparent; }
+.rmap-cols-nav::-webkit-scrollbar-thumb, .rnav-col-body::-webkit-scrollbar-thumb {
+  background: #2c3445; border-radius: 6px; border: 2px solid transparent; background-clip: padding-box;
+}
+.rmap-cols-nav::-webkit-scrollbar-thumb:hover, .rnav-col-body::-webkit-scrollbar-thumb:hover {
+  background: #3d4863; background-clip: padding-box;
+}
+
+/* 컬럼 연결선: 선택 항목 → 다음 컬럼 헤더. 그라데이션 + 글로우 + 도착 캡 */
+.rnav-links { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 6; overflow: visible; }
+.rnav-link-glow { fill: none; stroke: #3b82f6; stroke-width: 7; opacity: .18; filter: blur(2.5px); }
+.rnav-link { fill: none; stroke: url(#rnavGrad); stroke-width: 2; opacity: .95; stroke-linecap: round; }
+.rnav-link-cap { fill: #22d3ee; }
+
+/* 헤더 우측 데이터 컨트롤(다크) — 스냅샷 셀렉트 + JSON 입출력 */
+.header-actions { margin-left: auto; display: flex; align-items: center; }
+.header-data { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.hd-select {
+  border: 1px solid #2c3445; border-radius: 7px; padding: 6px 10px;
+  font-size: 12px; background: #1b2231; color: #dbe2ee; cursor: pointer;
+  max-width: 320px; outline: none;
+}
+.hd-select:focus { border-color: #3b82f6; }
+.hd-note { font-size: 11px; color: #9aa1ad; }
+.hd-note.err { color: #f87171; }
+.hd-actions { display: flex; gap: 8px; align-items: center; }
+.hd-btn {
+  border: 1px solid #2c3445; border-radius: 7px; background: #1b2231;
+  padding: 6px 11px; font-size: 12px; font-weight: 600; color: #dbe2ee; cursor: pointer;
+}
+.hd-btn:hover { background: #232c3e; border-color: #3a455c; }
+.hd-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.hd-btn.primary:hover { background: #4338ca; }
+
+/* 리소스맵 노드: 플랫폼 점 영역을 고정 너비로 → 점 개수(1~3)와 무관하게 제목 시작 위치 정렬 */
+.rnav-item .platdots { width: 32px; flex-shrink: 0; gap: 3px; margin-left: 0; justify-content: flex-start; }
+
+/* 헤더 커스텀 스냅샷 드롭다운 (날짜 + "현재" 칩 / 메타는 위에 플로팅 → 셀렉트가 안 밀림) */
+.snap { position: relative; display: flex; align-items: center; }
+.snap-meta {
+  position: absolute; bottom: calc(100% + 3px); right: 0;
+  white-space: nowrap; pointer-events: none; font-size: 10px; color: #8b93a7;
+}
+.snap-btn {
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  background: #1b2231; border: 1px solid #2c3445; border-radius: 7px;
+  padding: 6px 10px; color: #dbe2ee; font-size: 12px; font-weight: 600;
+}
+.snap-btn:hover { background: #232c3e; border-color: #3a455c; }
+.snap-chip {
+  background: var(--accent); color: #fff; font-size: 9px; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px; letter-spacing: .02em;
+}
+.snap-caret { color: #8b93a7; font-size: 10px; }
+.snap-menu {
+  position: absolute; top: 100%; right: 0; margin: 5px 0 0; z-index: 50;
+  list-style: none; padding: 5px;
+  background: #141925; border: 1px solid #2c3445; border-radius: 9px;
+  min-width: 252px; box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+}
+.snap-menu li {
+  display: flex; align-items: center; gap: 7px; padding: 7px 9px;
+  border-radius: 6px; cursor: pointer; color: #dbe2ee; font-size: 12px;
+}
+.snap-menu li:hover { background: #222c3e; }
+.snap-menu li.sel { background: #16335f; }
+.snap-menu-meta { margin-left: auto; font-size: 10px; color: #8b93a7; }

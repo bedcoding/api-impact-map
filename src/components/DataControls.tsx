@@ -2,15 +2,18 @@ import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import type { DatasetsApi } from "../datasets";
 import { isValidData } from "../data";
+import { SnapshotSelect } from "./SnapshotSelect";
 
 interface Props {
   ds: DatasetsApi;
+  variant?: "bar" | "header"; // "header" = 다크 헤더에 인라인으로 끼우는 경량 스타일
 }
 
-// JSON 내려받기/올리기 + 업로드 스냅샷을 생성일별로 전환하는 바.
-export function DataControls({ ds }: Props) {
+// JSON 내려받기/올리기 + 업로드 스냅샷을 생성일별로 전환하는 컨트롤.
+export function DataControls({ ds, variant = "bar" }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<{ text: string; err?: boolean } | null>(null);
+  const header = variant === "header";
 
   // 현재 활성 데이터셋을 JSON 파일로 저장.
   function download() {
@@ -50,6 +53,43 @@ export function DataControls({ ds }: Props) {
     }
   }
 
+  // 다크 헤더용: 커스텀 스냅샷 드롭다운 + JSON 입출력.
+  if (header) {
+    return (
+      <div className="header-data">
+        <SnapshotSelect ds={ds} />
+        {ds.activeIsUpload && (
+          <button type="button" className="hd-btn" onClick={ds.removeActive}>
+            스냅샷 삭제
+          </button>
+        )}
+        {note && (
+          <span className={`hd-note${note.err ? " err" : ""}`}>{note.text}</span>
+        )}
+        <div className="hd-actions">
+          <button type="button" className="hd-btn" onClick={download}>
+            JSON 내려받기
+          </button>
+          <button
+            type="button"
+            className="hd-btn primary"
+            onClick={() => fileRef.current?.click()}
+          >
+            JSON 올리기
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: "none" }}
+            onChange={onFile}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // 기본(라이트) 바: 그래프 뷰에서 쓰는 기본 select 기반.
   return (
     <div className="databar">
       <span className="databar-label">데이터 스냅샷</span>

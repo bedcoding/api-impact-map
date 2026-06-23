@@ -58,7 +58,7 @@ function Empty() {
   );
 }
 
-function EpPanel({
+export function EpPanel({
   id,
   activeEdges,
   onSelect,
@@ -111,7 +111,7 @@ function EpPanel({
   );
 }
 
-function ScreenPanel({
+export function ScreenPanel({
   id,
   activeEdges,
   platforms,

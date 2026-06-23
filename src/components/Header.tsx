@@ -1,7 +1,14 @@
+import type { ReactNode } from "react";
 import { useData } from "../dataContext";
 
-/** 상단 다크 헤더: 제목·부제·통계 칩. */
-export function Header() {
+/** 상단 다크 헤더: 제목·부제·통계 칩. 우측 actions 슬롯에 데이터 컨트롤 등을 끼울 수 있다. */
+export function Header({
+  actions,
+  showGeneratedAt = true,
+}: {
+  actions?: ReactNode;
+  showGeneratedAt?: boolean;
+}) {
   const { data } = useData();
   const s = data.stats;
   const items: [string, number][] = [
@@ -26,9 +33,12 @@ export function Header() {
             <span>{k}</span>
           </div>
         ))}
-        <div className="stat">
-          <span>생성 {data.generatedAt}</span>
-        </div>
+        {showGeneratedAt && (
+          <div className="stat">
+            <span>생성 {data.generatedAt}</span>
+          </div>
+        )}
+        {actions && <div className="header-actions">{actions}</div>}
       </div>
     </header>
   );

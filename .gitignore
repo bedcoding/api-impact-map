@@ -3,6 +3,9 @@ dist
 *.local
 .DS_Store
 
+# 패키지 매니저: 저장소는 npm(package-lock.json) 기준 — 로컬 yarn.lock 부산물은 추적 안 함
+yarn.lock
+
 # 실데이터 — 내부 API 맵. git에 올리지 않음(data.sample.json에서 시드됨).
 src/data.json
 
