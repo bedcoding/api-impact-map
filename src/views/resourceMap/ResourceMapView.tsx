@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Edge, Endpoint, Platform, Screen } from "../../types";
 import { indexData } from "../../data";
 import { useDatasets } from "../../datasets";
@@ -281,6 +282,7 @@ function ColumnView({
   onPick: (colIndex: number, type: NodeType, id: string) => void;
   onBodyScroll: () => void;
 }) {
+  const { epById } = useData();
   const groups =
     col.type === "screen"
       ? (groupScreens(col.items as Screen[]) as Group<Screen | Endpoint>[])
@@ -316,6 +318,7 @@ function ColumnView({
                       >
                         <PlatDots plats={s.platforms} />
                         <span className="rnav-label">{s.name}</span>
+                        <HomeLinkButton urls={screenHomepages(s, epById)} />
                       </li>
                     );
                   }
@@ -330,6 +333,7 @@ function ColumnView({
                     >
                       <span className={`badge ${methodCls(a.method)}`}>{a.method}</span>
                       <span className="rnav-label codeline">{a.path}</span>
+                      <HomeLinkButton urls={a.homepage ?? []} />
                     </li>
                   );
                 })}
@@ -339,5 +343,136 @@ function ColumnView({
         )}
       </div>
     </div>
+  );
+}
+
+// 화면이 호출하는 endpoint들의 homepage 합집합(순서 유지·중복 제거).
+// homepage는 endpoint에만 달려 있으므로 화면 행은 역추적해서 "그 화면이 실제 뜨는 웹 URL"을 모은다.
+function screenHomepages(s: Screen, epById: Map<string, Endpoint>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const eid of s.endpoints) {
+    const ep = epById.get(eid);
+    if (!ep?.homepage) continue;
+    for (const u of ep.homepage) {
+      if (!seen.has(u)) {
+        seen.add(u);
+        out.push(u);
+      }
+    }
+  }
+  return out;
+}
+
+function LinkIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+// 라이브 페이지 링크: 클릭해도 바로 이동하지 않고 URL 목록 팝오버를 띄운다(확인 후 각 URL 클릭 시 새 탭).
+// 팝오버는 컬럼의 overflow 클립을 피하려 body로 portal하고, 위치는 버튼 기준 fixed 좌표로 잡는다.
+function HomeLinkButton({ urls }: { urls: string[] }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t)) return;
+      if (document.getElementById("rnav-pop")?.contains(t)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    // 컬럼/페이지 스크롤·리사이즈 시 fixed 팝오버가 버튼과 어긋나므로 닫는다(capture로 내부 스크롤도 포착).
+    const onShift = () => setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onShift, true);
+    window.addEventListener("resize", onShift);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onShift, true);
+      window.removeEventListener("resize", onShift);
+    };
+  }, [open]);
+
+  if (!urls.length) return null;
+
+  const toggle = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 드릴다운(행 클릭)과 분리
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) {
+      const W = 320;
+      const estH = Math.min(320, 30 + urls.length * 30); // 팝오버 대략 높이
+      const left = Math.max(8, Math.min(r.right - W, window.innerWidth - W - 8));
+      // 아래로 펼치면 뷰포트를 넘는 경우 버튼 위로 펼친다.
+      const top =
+        r.bottom + 6 + estH > window.innerHeight - 8 ? Math.max(8, r.top - estH - 6) : r.bottom + 6;
+      setPos({ left, top });
+    }
+    setOpen((o) => !o);
+  };
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        className={`rnav-link-btn${open ? " on" : ""}`}
+        title={`라이브 페이지 ${urls.length}개 보기`}
+        aria-label="라이브 페이지 링크 보기"
+        onClick={toggle}
+      >
+        <LinkIcon />
+        <span className="rnav-link-n">{urls.length}</span>
+      </button>
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            id="rnav-pop"
+            className="rnav-pop"
+            style={{ left: pos.left, top: pos.top }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="rnav-pop-head">라이브 페이지 · {urls.length}</div>
+            <ul className="rnav-pop-list">
+              {urls.map((u) => (
+                <li key={u}>
+                  <a
+                    href={u}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={u}
+                    onClick={() => setOpen(false)}
+                  >
+                    {u.replace(/^https?:\/\//, "")}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

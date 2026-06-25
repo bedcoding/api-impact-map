@@ -8,6 +8,7 @@ export interface Endpoint {
   platforms: Platform[];
   screens: string[];
   displayPaths: string[];
+  homepage?: string[]; // 이 API가 실제 호출되는 레진 라이브 웹 URL(들). 없을 수 있음.
 }
 
 export interface Screen {

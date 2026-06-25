@@ -268,7 +268,7 @@ tbody tr:hover { background: #f5f6ff; }
 }
 .rnav-item:last-child { margin-bottom: 0; }
 .rnav-item:hover { background: #222c3e; }
-.rnav-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; color: #cdd6e4; }
+.rnav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; color: #cdd6e4; }
 .rnav-item .codeline { color: #9fb3d1; }
 .rnav-item.sel { background: #16335f; border-color: #3b82f6; }
 .rnav-item.sel .rnav-label { color: #fff; }
@@ -313,6 +313,35 @@ tbody tr:hover { background: #f5f6ff; }
 
 /* 리소스맵 노드: 플랫폼 점 영역을 고정 너비로 → 점 개수(1~3)와 무관하게 제목 시작 위치 정렬 */
 .rnav-item .platdots { width: 32px; flex-shrink: 0; gap: 3px; margin-left: 0; justify-content: flex-start; }
+
+/* 라이브 페이지 링크 버튼 (행 우측) — 평소 은은, 호버/열림 시 시안 강조 */
+.rnav-link-btn {
+  margin-left: auto; flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px;
+  border: 1px solid #2c3445; background: #1a2231; color: #8b93a7;
+  border-radius: 6px; padding: 3px 5px; cursor: pointer; line-height: 0;
+}
+.rnav-link-btn:hover, .rnav-link-btn.on { color: #22d3ee; border-color: #2f6f86; background: rgba(34,211,238,.08); }
+.rnav-link-n { font-size: 9px; font-weight: 700; line-height: 1; }
+.rnav-item.sel .rnav-link-btn { border-color: #3b82f6; color: #cfe0ff; }
+
+/* 라이브 페이지 팝오버 (body로 portal — 컬럼 overflow 클립 회피, 위치는 fixed) */
+.rnav-pop {
+  position: fixed; z-index: 50; width: 320px; max-height: 320px; overflow-y: auto;
+  background: #0f131d; border: 1px solid #2a3346; border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.5); padding: 6px;
+}
+.rnav-pop-head {
+  font-size: 10px; font-weight: 700; color: #8b93a7; padding: 5px 8px 7px;
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.rnav-pop-list { list-style: none; margin: 0; padding: 0; }
+.rnav-pop-list li { margin-bottom: 2px; }
+.rnav-pop-list li:last-child { margin-bottom: 0; }
+.rnav-pop-list a {
+  display: block; padding: 6px 8px; border-radius: 6px; font-size: 11.5px;
+  color: #9fb3d1; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rnav-pop-list a:hover { background: #182030; color: #22d3ee; }
 
 /* 헤더 커스텀 스냅샷 드롭다운 (날짜 + "현재" 칩 / 메타는 위에 플로팅 → 셀렉트가 안 밀림) */
 .snap { position: relative; display: flex; align-items: center; }
