@@ -273,6 +273,10 @@ tbody tr:hover { background: #f5f6ff; }
 .rnav-item.sel { background: #16335f; border-color: #3b82f6; }
 .rnav-item.sel .rnav-label { color: #fff; }
 .rnav-item.sel .codeline { color: #cfe0ff; }
+/* 4번째(마지막) 컬럼은 더 드릴다운하지 않으므로 클릭 불가 표시 (라이브 링크 버튼은 계속 동작) */
+.rnav-col.locked .rnav-item { cursor: default; }
+.rnav-col.locked .rnav-item:hover { background: transparent; }
+.rnav-col.locked .rnav-link-btn { cursor: pointer; }
 
 /* 다크 캔버스용 스크롤바 커스텀 (기본 회색 스크롤바 대체) */
 .rmap-cols-nav, .rnav-col-body { scrollbar-width: thin; scrollbar-color: #2c3445 transparent; }

@@ -14,6 +14,13 @@ import type { Group } from "./grouping";
 type NodeType = "screen" | "ep";
 type Axis = "screen" | "api";
 
+// 컬럼은 최대 4뎁스까지만(하드 차단). 4번째 컬럼에서는 더 드릴다운하지 않는다.
+const MAX_COLS = 4;
+// 컬럼 폭·간격·좌우 패딩은 styles.css(.rnav-col width, .rmap-cols-nav gap/padding)와 반드시 동기화.
+const COL_W = 300;
+const COL_GAP = 16; // 기본·최소 컬럼 간격
+const PAD_X = 16; // 컬럼 영역 좌우 패딩
+
 interface PathStep {
   type: NodeType;
   id: string;
@@ -127,6 +134,7 @@ function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
   const [tick, setTick] = useState(0); // 세로 스크롤·리사이즈 시 연결선 재측정 트리거
   const [links, setLinks] = useState<LinkSeg[]>([]);
   const [svg, setSvg] = useState({ w: 0, h: 0 });
+  const [gapPx, setGapPx] = useState(COL_GAP); // 4컬럼이 가용 폭을 채우도록 늘린 컬럼 간격
 
   const columns = useMemo<NavColumn[]>(() => {
     const liveEp = new Set<string>();
@@ -232,23 +240,35 @@ function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
     setLinks(segs);
   }, [path, columns.length, tick, axis, q]);
 
-  // 컬럼 리사이즈 시 재측정(세로 스크롤은 각 컬럼 onScroll에서 tick).
+  // 컬럼 리사이즈 시 재측정 + 컬럼 간격 재계산(세로 스크롤은 각 컬럼 onScroll에서 tick).
+  // 좌우 패딩은 PAD_X로 고정하고, 4컬럼이 가용 폭을 꽉 채우도록 컬럼 사이 간격만 늘린다.
+  // → 4뎁스일 때 우측 여백이 사라지고 좌우가 PAD_X로 일정해진다.
+  // 1~3뎁스에서는 간격이 고정이라 우측만 더 비어 보인다(의도).
   useLayoutEffect(() => {
     const nav = scrollRef.current;
     if (!nav) return;
-    const ro = new ResizeObserver(() => setTick((t) => t + 1));
+    const measure = () => {
+      const free = nav.clientWidth - PAD_X * 2 - MAX_COLS * COL_W;
+      setGapPx(Math.max(COL_GAP, Math.floor(free / (MAX_COLS - 1))));
+      setTick((t) => t + 1);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(nav);
     return () => ro.disconnect();
   }, []);
 
   // 컬럼 colIndex에서 항목 선택 → 그 컬럼까지의 경로를 자르고 새 스텝 추가(오른쪽 컬럼들은 재생성).
-  const onPick = (colIndex: number, type: NodeType, id: string) =>
+  // 마지막(4번째) 컬럼은 더 열지 않는다 → 4뎁스 하드 차단.
+  const onPick = (colIndex: number, type: NodeType, id: string) => {
+    if (colIndex >= MAX_COLS - 1) return;
     onPath((prev) => [...prev.slice(0, colIndex), { type, id }]);
+  };
 
   const bumpTick = () => setTick((t) => t + 1);
 
   return (
-    <div className="rmap-cols-nav" ref={scrollRef}>
+    <div className="rmap-cols-nav" ref={scrollRef} style={{ gap: gapPx }}>
       <svg className="rnav-links" width={svg.w} height={svg.h} aria-hidden="true">
         <defs>
           <linearGradient id="rnavGrad" x1="0" y1="0" x2="1" y2="0">
@@ -265,7 +285,14 @@ function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
         ))}
       </svg>
       {columns.map((col, ci) => (
-        <ColumnView key={col.key} col={col} colIndex={ci} onPick={onPick} onBodyScroll={bumpTick} />
+        <ColumnView
+          key={col.key}
+          col={col}
+          colIndex={ci}
+          onPick={onPick}
+          onBodyScroll={bumpTick}
+          locked={ci >= MAX_COLS - 1}
+        />
       ))}
     </div>
   );
@@ -276,11 +303,13 @@ function ColumnView({
   colIndex,
   onPick,
   onBodyScroll,
+  locked,
 }: {
   col: NavColumn;
   colIndex: number;
   onPick: (colIndex: number, type: NodeType, id: string) => void;
   onBodyScroll: () => void;
+  locked: boolean;
 }) {
   const { epById } = useData();
   const groups =
@@ -289,7 +318,7 @@ function ColumnView({
       : (groupEndpoints(col.items as Endpoint[]) as Group<Screen | Endpoint>[]);
 
   return (
-    <div className="rnav-col">
+    <div className={`rnav-col${locked ? " locked" : ""}`}>
       <div className="rnav-col-head" data-head-col={colIndex} title={col.title}>
         {col.title}
       </div>
