@@ -37,7 +37,7 @@ export interface DatasetsApi {
 }
 
 // 번들 기본 데이터셋과 업로드 스냅샷들을 생성일별로 모아 관리한다.
-// base: 번들 기본본(기본=기존 data.json). 새 라우트는 D_WEB(routing-docs 신규)을 넘겨 같은 UI를 다른 데이터로 띄운다.
+// base: 번들 기본본(폴백 샘플). 라우트는 D_WEB(routing-docs web 데이터)을 넘긴다.
 export function useDatasets(base: AppData = D): DatasetsApi {
   const [uploads, setUploads] = useState<AppData[]>(() => loadUploads());
   const [activeAt, setActiveAt] = useState<string>(base.generatedAt);

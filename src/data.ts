@@ -1,9 +1,6 @@
 import type { AppData, Endpoint, Screen } from "./types";
-// 데이터 우선순위: 실데이터(data.json)를 먼저 쓰되, 내용이 깨졌으면(빈 객체·배열 누락 등) 가짜 샘플(data.sample.json)로 폴백한다.
-//  · 파일이 아예 없는 경우 → predev/prebuild의 ensure-data.mjs가 빌드 전에 샘플을 복사하므로 import 자체는 항상 성공한다.
-//  · 파일은 있는데 형식이 잘못된 경우 → 아래 isValidData()가 런타임에 샘플로 폴백.
-// (data.json은 gitignore되는 내부 API 맵. 실데이터로 보려면 app/src/data.json에 내보낸 data.json을 덮어쓰면 된다. app/README.md 참고)
-import realData from "./data.json";
+// 메인 데이터는 routing-docs(web 전용)에서 빌드된 data.web.json — data.web.ts(D_WEB)가 공급한다.
+// 여기 D는 그게 없을 때를 위한 폴백 샘플(data.sample.json)이다.
 import sampleData from "./data.sample.json";
 
 // 업로드된 JSON도 같은 검사로 거른다(파일 선택 시 재사용). generatedAt은 스냅샷
@@ -40,14 +37,8 @@ export function isValidData(d: unknown): d is AppData {
   );
 }
 
-// 번들 기본 데이터셋. 실데이터가 유효하면 그걸, 아니면 샘플을 사용.
-export const D: AppData = isValidData(realData)
-  ? (realData as unknown as AppData)
-  : (sampleData as unknown as AppData);
-
-if (import.meta.env.DEV && !isValidData(realData)) {
-  console.warn("[data] data.json 형식이 올바르지 않아 data.sample.json 으로 폴백했습니다.");
-}
+// 폴백 기본 데이터셋(샘플). 실제 메인 데이터는 data.web.ts(D_WEB)가 공급한다.
+export const D: AppData = sampleData as unknown as AppData;
 
 // 데이터셋은 런타임에 교체될 수 있으므로 id→객체 조회 맵을 그때그때 만든다.
 export function indexData(data: AppData): {

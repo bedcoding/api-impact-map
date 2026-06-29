@@ -45,7 +45,7 @@ interface LinkSeg {
 // 항목을 누르면 "방향이 바뀌는" 게 아니라 오른쪽에 연결 목록 컬럼이 누적된다 →
 // 보던 컬럼은 그대로 남아 맥락이 유지되고, 화면→API→화면…으로 의존 전파를 무한 추적할 수 있다.
 // 선택 항목 → 다음 컬럼 헤더를 잇는 곡선(연결선)으로 "맵"임을 시각화한다.
-// bundle: 번들 기본 데이터. 생략하면 기존 data.json, /web 라우트는 D_WEB(routing-docs 신규)을 넘긴다.
+// bundle: 표시할 데이터 번들(라우트가 D_WEB을 넘김). 생략 시 useDatasets 기본 폴백(샘플).
 export function ResourceMapView({ bundle }: { bundle?: AppData } = {}) {
   const datasets = useDatasets(bundle);
   const data = datasets.active;

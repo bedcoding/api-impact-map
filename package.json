@@ -5,12 +5,13 @@
   "type": "module",
   "description": "API ↔ 화면 영향도 맵 — 엔드포인트 변경 시 영향받는 화면을 플랫폼별로 시각화",
   "scripts": {
-    "predev": "node scripts/ensure-data.mjs && node scripts/build-web-data.mjs",
+    "predev": "node scripts/build-web-data.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/ensure-data.mjs && node scripts/build-web-data.mjs",
+    "prebuild": "node scripts/build-web-data.mjs",
     "build": "vite build",
+    "build:single": "yarn build && node scripts/build-singlefile.mjs",
     "preview": "vite preview",
-    "pretypecheck": "node scripts/ensure-data.mjs && node scripts/build-web-data.mjs",
+    "pretypecheck": "node scripts/build-web-data.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
