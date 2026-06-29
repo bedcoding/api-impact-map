@@ -9,5 +9,11 @@ yarn.lock
 # 실데이터 — 내부 API 맵. git에 올리지 않음(data.sample.json에서 시드됨).
 src/data.json
 
+# routing-docs 폴더에서 빌드되는 web 전용 데이터(scripts/build-web-data.mjs 산출물).
+src/data.web.json
+
+# routing-docs 원본 폴더(내부 라우팅/API 문서 스냅샷) — git에 올리지 않음.
+routing-docs_*/
+
 # 로컬 검증 스크린샷(실데이터 포함). git에 올리지 않음.
 scripts/shots/

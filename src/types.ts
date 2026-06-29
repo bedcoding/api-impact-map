@@ -18,6 +18,8 @@ export interface Screen {
   aliases: Partial<Record<Platform, string>>;
   platforms: Platform[];
   endpoints: string[];
+  url?: string; // 라이브 페이지 URL(routing-docs 신규 데이터). 전역/legacy 화면엔 없을 수 있음.
+  section?: { order: number; title: string }; // routing-docs 섹션(화면 카드 정렬·그룹핑용). legacy엔 없음.
 }
 
 export interface Edge {
@@ -42,6 +44,8 @@ export interface AppData {
   endpoints: Endpoint[];
   screens: Screen[];
   edges: Edge[];
+  source?: string; // 출처 표식("routing-docs" = web 전용 신규 데이터)
+  mobilePending?: boolean; // iOS/Android 미수집 — UI에서 "추후 추가 예정" 표시
 }
 
 /** 그래프/표에서의 현재 선택. */

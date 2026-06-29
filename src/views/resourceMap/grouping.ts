@@ -46,5 +46,21 @@ export function groupBy<T>(items: T[], keyOf: (t: T) => string): Group<T>[] {
 export const groupEndpoints = (eps: Endpoint[]): Group<Endpoint>[] =>
   groupBy(eps, (e) => apiDomain(e.path));
 
-export const groupScreens = (screens: Screen[]): Group<Screen>[] =>
-  groupBy(screens, (s) => screenGroup(s.name));
+// 화면 카드 그룹핑.
+//  · routing-docs 데이터(section 있음): 섹션 단위로 묶고 섹션 순서(00 전역 → 01 메인 … → 12 기타)로 정렬.
+//  · legacy 데이터(section 없음): 명시 섹션이 없어 이름 prefix로 느슨하게 묶고 크기순.
+export const groupScreens = (screens: Screen[]): Group<Screen>[] => {
+  if (screens.some((s) => s.section)) {
+    const m = new Map<string, { order: number; items: Screen[] }>();
+    for (const s of screens) {
+      const sec = s.section ?? { order: 999, title: "기타" };
+      const g = m.get(sec.title);
+      if (g) g.items.push(s);
+      else m.set(sec.title, { order: sec.order, items: [s] });
+    }
+    return [...m.entries()]
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([title, v]) => ({ key: title, label: title, items: v.items }));
+  }
+  return groupBy(screens, (s) => screenGroup(s.name));
+};

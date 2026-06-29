@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Edge, Endpoint, Platform, Screen } from "../../types";
+import type { AppData, Edge, Endpoint, Platform, Screen } from "../../types";
 import { indexData } from "../../data";
 import { useDatasets } from "../../datasets";
 import { DataContext, useData } from "../../dataContext";
@@ -45,8 +45,9 @@ interface LinkSeg {
 // 항목을 누르면 "방향이 바뀌는" 게 아니라 오른쪽에 연결 목록 컬럼이 누적된다 →
 // 보던 컬럼은 그대로 남아 맥락이 유지되고, 화면→API→화면…으로 의존 전파를 무한 추적할 수 있다.
 // 선택 항목 → 다음 컬럼 헤더를 잇는 곡선(연결선)으로 "맵"임을 시각화한다.
-export function ResourceMapView() {
-  const datasets = useDatasets();
+// bundle: 번들 기본 데이터. 생략하면 기존 data.json, /web 라우트는 D_WEB(routing-docs 신규)을 넘긴다.
+export function ResourceMapView({ bundle }: { bundle?: AppData } = {}) {
+  const datasets = useDatasets(bundle);
   const data = datasets.active;
   const { epById, screenById } = useMemo(() => indexData(data), [data]);
 
@@ -311,7 +312,6 @@ function ColumnView({
   onBodyScroll: () => void;
   locked: boolean;
 }) {
-  const { epById } = useData();
   const groups =
     col.type === "screen"
       ? (groupScreens(col.items as Screen[]) as Group<Screen | Endpoint>[])
@@ -337,17 +337,20 @@ function ColumnView({
                   const isSel = col.selectedId === item.id;
                   if (col.type === "screen") {
                     const s = item as Screen;
+                    const url = s.url ? s.url.replace(/^https?:\/\//, "") : "";
                     return (
                       <li
                         key={s.id}
                         data-sel-col={isSel ? colIndex : undefined}
                         className={`rnav-item${isSel ? " sel" : ""}`}
-                        title={`${s.name} [${s.code}]`}
+                        title={url ? `${s.name}\n${s.url}` : `${s.name} [${s.code}]`}
                         onClick={() => onPick(colIndex, "screen", s.id)}
                       >
                         <PlatDots plats={s.platforms} />
-                        <span className="rnav-label">{s.name}</span>
-                        <HomeLinkButton urls={screenHomepages(s, epById)} />
+                        <span className="rnav-slabel">
+                          <span className="rnav-sname">{s.name}</span>
+                          {s.url ? <HomeLinkButton urls={[s.url]} triggerLabel={url} /> : null}
+                        </span>
                       </li>
                     );
                   }
@@ -375,24 +378,6 @@ function ColumnView({
   );
 }
 
-// 화면이 호출하는 endpoint들의 homepage 합집합(순서 유지·중복 제거).
-// homepage는 endpoint에만 달려 있으므로 화면 행은 역추적해서 "그 화면이 실제 뜨는 웹 URL"을 모은다.
-function screenHomepages(s: Screen, epById: Map<string, Endpoint>): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const eid of s.endpoints) {
-    const ep = epById.get(eid);
-    if (!ep?.homepage) continue;
-    for (const u of ep.homepage) {
-      if (!seen.has(u)) {
-        seen.add(u);
-        out.push(u);
-      }
-    }
-  }
-  return out;
-}
-
 function LinkIcon() {
   return (
     <svg
@@ -414,7 +399,8 @@ function LinkIcon() {
 
 // 라이브 페이지 링크: 클릭해도 바로 이동하지 않고 URL 목록 팝오버를 띄운다(확인 후 각 URL 클릭 시 새 탭).
 // 팝오버는 컬럼의 overflow 클립을 피하려 body로 portal하고, 위치는 버튼 기준 fixed 좌표로 잡는다.
-function HomeLinkButton({ urls }: { urls: string[] }) {
+// triggerLabel: 주면 고리 아이콘 대신 그 텍스트(=URL)를 트리거로 쓴다 — 화면 행 URL이 "실수 클릭 즉시 이동"되지 않게.
+function HomeLinkButton({ urls, triggerLabel }: { urls: string[]; triggerLabel?: string }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -466,13 +452,21 @@ function HomeLinkButton({ urls }: { urls: string[] }) {
       <button
         ref={btnRef}
         type="button"
-        className={`rnav-link-btn${open ? " on" : ""}`}
-        title={`라이브 페이지 ${urls.length}개 보기`}
+        className={
+          triggerLabel ? `rnav-surl-btn${open ? " on" : ""}` : `rnav-link-btn${open ? " on" : ""}`
+        }
+        title={triggerLabel ? "클릭 → 라이브 페이지 링크 열기" : `라이브 페이지 ${urls.length}개 보기`}
         aria-label="라이브 페이지 링크 보기"
         onClick={toggle}
       >
-        <LinkIcon />
-        <span className="rnav-link-n">{urls.length}</span>
+        {triggerLabel ? (
+          triggerLabel
+        ) : (
+          <>
+            <LinkIcon />
+            <span className="rnav-link-n">{urls.length}</span>
+          </>
+        )}
       </button>
       {open &&
         pos &&
@@ -483,7 +477,9 @@ function HomeLinkButton({ urls }: { urls: string[] }) {
             style={{ left: pos.left, top: pos.top }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="rnav-pop-head">라이브 페이지 · {urls.length}</div>
+            <div className="rnav-pop-head">
+              라이브 페이지{urls.length > 1 ? ` · ${urls.length}` : ""}
+            </div>
             <ul className="rnav-pop-list">
               {urls.map((u) => (
                 <li key={u}>

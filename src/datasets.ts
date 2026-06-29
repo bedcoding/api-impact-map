@@ -37,9 +37,10 @@ export interface DatasetsApi {
 }
 
 // 번들 기본 데이터셋과 업로드 스냅샷들을 생성일별로 모아 관리한다.
-export function useDatasets(): DatasetsApi {
+// base: 번들 기본본(기본=기존 data.json). 새 라우트는 D_WEB(routing-docs 신규)을 넘겨 같은 UI를 다른 데이터로 띄운다.
+export function useDatasets(base: AppData = D): DatasetsApi {
   const [uploads, setUploads] = useState<AppData[]>(() => loadUploads());
-  const [activeAt, setActiveAt] = useState<string>(D.generatedAt);
+  const [activeAt, setActiveAt] = useState<string>(base.generatedAt);
 
   useEffect(() => {
     saveUploads(uploads);
@@ -49,14 +50,14 @@ export function useDatasets(): DatasetsApi {
   // 이래야 '번들을 받아 편집 후 같은 날짜로 재업로드'가 반영된다. 생성일 최신순 정렬.
   const datasets = useMemo(() => {
     const byDate = new Map<string, AppData>();
-    byDate.set(D.generatedAt, D);
+    byDate.set(base.generatedAt, base);
     uploads.forEach((u) => byDate.set(u.generatedAt, u));
     return [...byDate.values()].sort((a, b) => b.generatedAt.localeCompare(a.generatedAt));
-  }, [uploads]);
+  }, [uploads, base]);
 
   const active = useMemo(
-    () => datasets.find((d) => d.generatedAt === activeAt) ?? D,
-    [datasets, activeAt],
+    () => datasets.find((d) => d.generatedAt === activeAt) ?? base,
+    [datasets, activeAt, base],
   );
 
   // 활성 스냅샷이 업로드본인지(삭제 가능 여부). 번들 날짜를 덮어쓴 업로드도 포함된다.
@@ -74,15 +75,15 @@ export function useDatasets(): DatasetsApi {
   // 업로드 스냅샷 삭제. 삭제 후 같은 날짜 번들이 있으면 그게 다시 보이고, 없으면 번들 날짜로.
   const removeActive = useCallback(() => {
     setUploads((prev) => prev.filter((u) => u.generatedAt !== activeAt));
-    if (activeAt !== D.generatedAt) setActiveAt(D.generatedAt);
-  }, [activeAt]);
+    if (activeAt !== base.generatedAt) setActiveAt(base.generatedAt);
+  }, [activeAt, base]);
 
   return {
     datasets,
     active,
     activeAt,
     activeIsUpload,
-    bundledAt: D.generatedAt,
+    bundledAt: base.generatedAt,
     setActiveAt,
     addDataset,
     removeActive,

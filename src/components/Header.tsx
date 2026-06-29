@@ -11,12 +11,14 @@ export function Header({
 }) {
   const { data } = useData();
   const s = data.stats;
-  const items: [string, number][] = [
+  // 신규 web 데이터(routing-docs)는 모바일 미수집 → iOS/Android는 "추후"로 표시(0 대신).
+  const pending = data.mobilePending;
+  const items: [string, number | string][] = [
     ["화면", s.screens],
     ["엔드포인트", s.endpoints],
     ["연결", s.edges],
-    ["iOS 화면", s.iosScreens],
-    ["Android 화면", s.androidScreens],
+    ["iOS 화면", pending ? "추후" : s.iosScreens],
+    ["Android 화면", pending ? "추후" : s.androidScreens],
     ["Web 화면", s.webScreens],
   ];
   return (
