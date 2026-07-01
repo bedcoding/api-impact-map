@@ -25,17 +25,13 @@ export function PlatformFilter({
   );
 }
 
-/** 항목이 속한 플랫폼을 색 점으로 표시 (상세 패널용). */
+/** 항목이 속한 플랫폼만 세로로 점 표시: web 전용이면 점 1개, 멀티플랫폼이면 세로로 여러 개.
+ *  (없는 플랫폼은 그리지 않아 노이즈를 줄인다. 세로라 가로 폭을 거의 안 먹음.) */
 export function PlatDots({ plats }: { plats: Platform[] }) {
   return (
     <span className="platdots">
       {PLATFORMS.filter((p) => plats.includes(p)).map((p) => (
-        <span
-          key={p}
-          className="pd"
-          style={{ background: PCOLOR[p] }}
-          title={PLABEL[p]}
-        />
+        <span key={p} className="pd" style={{ background: PCOLOR[p] }} title={PLABEL[p]} />
       ))}
     </span>
   );

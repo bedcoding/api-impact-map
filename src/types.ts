@@ -9,6 +9,7 @@ export interface Endpoint {
   screens: string[];
   displayPaths: string[];
   homepage?: string[]; // 이 API가 실제 호출되는 레진 라이브 웹 URL(들). 없을 수 있음.
+  summary?: string; // API 설명(routing-docs). 행에 "무슨 API인지" 표시용.
 }
 
 export interface Screen {
@@ -22,10 +23,14 @@ export interface Screen {
   section?: { order: number; title: string }; // routing-docs 섹션(화면 카드 정렬·그룹핑용). legacy엔 없음.
 }
 
+// 검증 방식: 코드분석·런타임실측 확인 여부. (routing-docs의 source/label 정규화값)
+export type EdgeSource = "both" | "code" | "runtime";
+
 export interface Edge {
   screen: string;
   endpoint: string;
   platform: Platform;
+  source?: EdgeSource; // 이 (화면,API) 매핑이 어떻게 확인됐는지
 }
 
 export interface Stats {
@@ -44,7 +49,8 @@ export interface AppData {
   endpoints: Endpoint[];
   screens: Screen[];
   edges: Edge[];
-  source?: string; // 출처 표식("routing-docs" = web 전용 신규 데이터)
+  source?: string; // 출처 표식("routing-docs")
+  platform?: Platform; // 이 스냅샷의 플랫폼(폴더명에서 추출). 단일 플랫폼 스냅샷.
   mobilePending?: boolean; // iOS/Android 미수집 — UI에서 "추후 추가 예정" 표시
 }
 

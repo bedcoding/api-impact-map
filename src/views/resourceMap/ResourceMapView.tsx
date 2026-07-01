@@ -17,7 +17,7 @@ type Axis = "screen" | "api";
 // 컬럼은 최대 4뎁스까지만(하드 차단). 4번째 컬럼에서는 더 드릴다운하지 않는다.
 const MAX_COLS = 4;
 // 컬럼 폭·간격·좌우 패딩은 styles.css(.rnav-col width, .rmap-cols-nav gap/padding)와 반드시 동기화.
-const COL_W = 300;
+const COL_W = 320;
 const COL_GAP = 16; // 기본·최소 컬럼 간격
 const PAD_X = 16; // 컬럼 영역 좌우 패딩
 
@@ -32,6 +32,7 @@ interface NavColumn {
   title: string;
   items: (Screen | Endpoint)[];
   selectedId: string | null;
+  parentId?: string; // 이 컬럼이 파생된 부모 노드(드릴다운). root엔 없음 → 검증 배지 표시 안 함
 }
 
 interface LinkSeg {
@@ -55,13 +56,21 @@ export function ResourceMapView({ bundle }: { bundle?: AppData } = {}) {
   const [platforms, setPlatforms] = useState<Set<Platform>>(new Set(PLATFORMS));
   const [axis, setAxis] = useState<Axis>("screen");
   const [path, setPath] = useState<PathStep[]>([]);
+  const [leftMode, setLeftMode] = useState<"verify" | "platform">("verify"); // 필터·왼쪽 점 기준: 검증 vs 플랫폼
+  const [verifySet, setVerifySet] = useState<Set<string>>(
+    () => new Set(["both", "code", "runtime"]),
+  );
 
   // 데이터셋 교체 시 탐색 경로 초기화.
   useEffect(() => setPath([]), [data]);
 
+  // 활성 모드에 따라 edge 필터: 플랫폼 모드=플랫폼별, 검증 모드=검증방식(코드/실측/코드+실측)별.
   const activeEdges = useMemo(
-    () => data.edges.filter((e) => platforms.has(e.platform)),
-    [data, platforms],
+    () =>
+      leftMode === "platform"
+        ? data.edges.filter((e) => platforms.has(e.platform))
+        : data.edges.filter((e) => verifySet.has(e.source ?? "code")),
+    [data, platforms, verifySet, leftMode],
   );
 
   const togglePlatform = (p: Platform) => {
@@ -70,6 +79,16 @@ export function ResourceMapView({ bundle }: { bundle?: AppData } = {}) {
       if (next.has(p)) next.delete(p);
       else next.add(p);
       if (next.size === 0) next.add(p); // 절대 빈 상태 안 됨
+      return next;
+    });
+  };
+
+  const toggleVerify = (k: string) => {
+    setVerifySet((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      if (next.size === 0) next.add(k); // 절대 빈 상태 안 됨
       return next;
     });
   };
@@ -95,7 +114,6 @@ export function ResourceMapView({ bundle }: { bundle?: AppData } = {}) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <PlatformFilter platforms={platforms} onToggle={togglePlatform} />
             <div className="rmap-dir" role="tablist">
               <button
                 type="button"
@@ -112,8 +130,36 @@ export function ResourceMapView({ bundle }: { bundle?: AppData } = {}) {
                 API부터
               </button>
             </div>
+            {leftMode === "platform" ? (
+              <PlatformFilter platforms={platforms} onToggle={togglePlatform} />
+            ) : (
+              <VerifyFilter active={verifySet} onToggle={toggleVerify} />
+            )}
+            <div className="rmap-dir" role="tablist" title="필터·왼쪽 점을 무엇 기준으로 볼지">
+              <button
+                type="button"
+                className={leftMode === "verify" ? "active" : ""}
+                onClick={() => setLeftMode("verify")}
+              >
+                검증
+              </button>
+              <button
+                type="button"
+                className={leftMode === "platform" ? "active" : ""}
+                onClick={() => setLeftMode("platform")}
+              >
+                플랫폼
+              </button>
+            </div>
           </div>
-          <ColumnNav axis={axis} activeEdges={activeEdges} query={query} path={path} onPath={setPath} />
+          <ColumnNav
+            axis={axis}
+            activeEdges={activeEdges}
+            query={query}
+            path={path}
+            onPath={setPath}
+            leftMode={leftMode}
+          />
         </div>
       </main>
     </DataContext.Provider>
@@ -126,9 +172,10 @@ interface ColumnNavProps {
   query: string;
   path: PathStep[];
   onPath: React.Dispatch<React.SetStateAction<PathStep[]>>;
+  leftMode: "verify" | "platform";
 }
 
-function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
+function ColumnNav({ axis, activeEdges, query, path, onPath, leftMode }: ColumnNavProps) {
   const { data, epById, screenById } = useData();
   const q = query.trim().toLowerCase();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -181,6 +228,7 @@ function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
           title: `${s?.name ?? step.id} → API · ${items.length}`,
           items,
           selectedId: path[i + 1]?.id ?? null,
+          parentId: step.id, // 부모=화면 → 각 API 행 배지 = edge(화면,API).source
         });
       } else {
         const items = linkedScreens(step.id);
@@ -191,11 +239,33 @@ function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
           title: `${a ? `${a.method} ${a.path}` : step.id} → 화면 · ${items.length}`,
           items,
           selectedId: path[i + 1]?.id ?? null,
+          parentId: step.id, // 부모=API → 각 화면 행 배지 = edge(화면,API).source
         });
       }
     }
     return cols;
   }, [data, activeEdges, axis, path, q, screenById, epById]);
+
+  // (화면,API) 매핑의 검증 방식 조회맵 — 드릴다운 컬럼 항목 배지에 쓴다. key = `screen\tendpoint`.
+  const edgeSource = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const e of activeEdges) if (e.source) m.set(`${e.screen}\t${e.endpoint}`, e.source);
+    return m;
+  }, [activeEdges]);
+
+  // 시작 컬럼(root) 항목의 대표 검증값: 그 화면/API가 가진 연결 중 가장 강한 것(both>runtime>code).
+  const nodeRep = useMemo(() => {
+    const rank: Record<string, number> = { both: 3, runtime: 2, code: 1 };
+    const m = new Map<string, string>();
+    for (const e of activeEdges) {
+      const s = e.source ?? "code";
+      for (const id of [e.screen, e.endpoint]) {
+        const cur = m.get(id);
+        if (!cur || rank[s] > (rank[cur] ?? 0)) m.set(id, s);
+      }
+    }
+    return m;
+  }, [activeEdges]);
 
   // 컬럼이 늘어나면 오른쪽 끝으로 스크롤해 새 컬럼이 보이게.
   useLayoutEffect(() => {
@@ -293,7 +363,61 @@ function ColumnNav({ axis, activeEdges, query, path, onPath }: ColumnNavProps) {
           onPick={onPick}
           onBodyScroll={bumpTick}
           locked={ci >= MAX_COLS - 1}
+          edgeSource={edgeSource}
+          nodeRep={nodeRep}
+          leftMode={leftMode}
         />
+      ))}
+    </div>
+  );
+}
+
+// 검증값 → 라벨·색. both=코드+실측(초록)·runtime=실측(파랑)·code=코드(회색).
+const V_LABEL: Record<string, string> = { both: "코드+실측", runtime: "실측", code: "코드" };
+// 검증 신호등: 코드+실측=진초록 · 실측=노랑 · 코드=회색 (신뢰도 순, 서로 뚜렷이 구분).
+const V_COLOR: Record<string, string> = { both: "#22c55e", runtime: "#facc15", code: "#94a3b8" };
+
+// 행 왼쪽 점. 검증 모드=검증 색점(직접 연결(=드릴다운) 아니면 빈 점), 플랫폼 모드=플랫폼 신호등.
+function LeftDot({
+  mode,
+  plats,
+  source,
+}: {
+  mode: "verify" | "platform";
+  plats: Platform[];
+  source?: string;
+}) {
+  if (mode === "platform") return <PlatDots plats={plats} />;
+  const color = source ? V_COLOR[source] : undefined;
+  return (
+    <span className="platdots">
+      <span
+        className={`pd${color ? "" : " vdot-none"}`}
+        style={color ? { background: color } : undefined}
+        title={source ? `검증: ${V_LABEL[source]}` : "직접 연결 아님(시작 컬럼)"}
+      />
+    </span>
+  );
+}
+
+// 검증방식 필터(툴바): 코드+실측·실측·코드 on/off. PlatformFilter와 같은 룩앤필.
+const VERIFY_OPTS = [
+  { key: "both", label: "코드+실측" },
+  { key: "runtime", label: "실측" },
+  { key: "code", label: "코드" },
+];
+function VerifyFilter({ active, onToggle }: { active: Set<string>; onToggle: (k: string) => void }) {
+  return (
+    <div className="pfilter">
+      {VERIFY_OPTS.map((o) => (
+        <label
+          key={o.key}
+          className={active.has(o.key) ? "" : "off"}
+          onClick={() => onToggle(o.key)}
+        >
+          <span className="dot" style={{ background: V_COLOR[o.key] }} />
+          {o.label}
+        </label>
       ))}
     </div>
   );
@@ -305,12 +429,18 @@ function ColumnView({
   onPick,
   onBodyScroll,
   locked,
+  edgeSource,
+  nodeRep,
+  leftMode,
 }: {
   col: NavColumn;
   colIndex: number;
   onPick: (colIndex: number, type: NodeType, id: string) => void;
   onBodyScroll: () => void;
   locked: boolean;
+  edgeSource: Map<string, string>;
+  nodeRep: Map<string, string>;
+  leftMode: "verify" | "platform";
 }) {
   const groups =
     col.type === "screen"
@@ -338,6 +468,9 @@ function ColumnView({
                   if (col.type === "screen") {
                     const s = item as Screen;
                     const url = s.url ? s.url.replace(/^https?:\/\//, "") : "";
+                    const src = col.parentId
+                      ? edgeSource.get(`${s.id}\t${col.parentId}`)
+                      : nodeRep.get(s.id);
                     return (
                       <li
                         key={s.id}
@@ -346,25 +479,40 @@ function ColumnView({
                         title={url ? `${s.name}\n${s.url}` : `${s.name} [${s.code}]`}
                         onClick={() => onPick(colIndex, "screen", s.id)}
                       >
-                        <PlatDots plats={s.platforms} />
+                        <LeftDot mode={leftMode} plats={s.platforms} source={src} />
                         <span className="rnav-slabel">
-                          <span className="rnav-sname">{s.name}</span>
-                          {s.url ? <HomeLinkButton urls={[s.url]} triggerLabel={url} /> : null}
+                          <span className="rnav-srow">
+                            {s.url ? (
+                              <HomeLinkButton urls={[s.url]} triggerLabel={url} />
+                            ) : (
+                              <span className="rnav-smain">{s.name}</span>
+                            )}
+                          </span>
+                          {s.url ? <span className="rnav-ssub">{s.name}</span> : null}
                         </span>
                       </li>
                     );
                   }
                   const a = item as Endpoint;
+                  const src = col.parentId
+                    ? edgeSource.get(`${col.parentId}\t${a.id}`)
+                    : nodeRep.get(a.id);
                   return (
                     <li
                       key={a.id}
                       data-sel-col={isSel ? colIndex : undefined}
                       className={`rnav-item${isSel ? " sel" : ""}`}
-                      title={`${a.method} ${a.path}`}
+                      title={a.summary ? `${a.summary}\n${a.method} ${a.path}` : `${a.method} ${a.path}`}
                       onClick={() => onPick(colIndex, "ep", a.id)}
                     >
+                      <LeftDot mode={leftMode} plats={a.platforms} source={src} />
                       <span className={`badge ${methodCls(a.method)}`}>{a.method}</span>
-                      <span className="rnav-label codeline">{a.path}</span>
+                      <span className="rnav-slabel">
+                        <span className="rnav-srow">
+                          <span className="rnav-smain mono">{a.path}</span>
+                        </span>
+                        {a.summary ? <span className="rnav-ssub">{a.summary}</span> : null}
+                      </span>
                       <HomeLinkButton urls={a.homepage ?? []} />
                     </li>
                   );
