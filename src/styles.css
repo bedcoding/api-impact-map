@@ -287,6 +287,23 @@ tbody tr:hover { background: #f5f6ff; }
 .rnav-ssub { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: #8994a6; }
 .rnav-item.sel .rnav-smain { color: #fff; }
 .rnav-item.sel .rnav-ssub { color: #c4d2e8; }
+/* 백엔드 서비스 칩(경로와 설명 사이 줄): 링크 있으면 파란 칩=스웨거 문서, 없으면 회색 정적 칩 */
+/* 한 줄 왼쪽 정렬. 가로 넘치면 컨테이너가 잘리고 마지막 칩만 줄며 …(text-overflow) */
+.rnav-svcs { display: flex; flex-wrap: nowrap; gap: 4px; min-width: 0; margin: 3px 0 1px; overflow: hidden; }
+.rnav-svc { display: inline-flex; align-items: center; gap: 3px; min-width: 0; flex-shrink: 0;
+  font-size: 10px; line-height: 1.5; padding: 0 6px; border-radius: 999px;
+  background: rgba(148,163,184,.13); color: #aab6c8; border: 1px solid transparent;
+  text-decoration: none; }
+.rnav-svc:last-child { flex-shrink: 1; } /* 넘칠 땐 마지막 칩이 줄어들어 … 처리 */
+.rnav-svc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.rnav-svc svg { width: 9px; height: 9px; flex-shrink: 0; opacity: .85; }
+.rnav-svc.has-doc { color: #93c5fd; background: rgba(59,130,246,.14); }
+/* 칩 묶음이 팝오버 트리거 버튼일 때: 버튼 기본 스타일 제거, 버튼 hover/열림 시 문서 있는 칩 강조 */
+button.rnav-svcs.as-btn { border: 0; background: none; padding: 0; font: inherit; text-align: left; cursor: pointer; }
+button.rnav-svcs.as-btn:hover .rnav-svc.has-doc,
+button.rnav-svcs.as-btn.on .rnav-svc.has-doc { color: #bfdbfe; background: rgba(59,130,246,.3); border-color: rgba(59,130,246,.55); }
+.rnav-item.sel .rnav-svc { color: #c4d2e8; }
+.rnav-item.sel .rnav-svc.has-doc { color: #bfdbfe; }
 /* 화면 URL: 텍스트처럼 보이지만 버튼 — 클릭하면 바로 안 가고 확인 팝오버를 띄운다(실수 이동 방지) */
 .rnav-surl-btn { flex: 1; min-width: 0; display: block; margin: 0; padding: 0; border: 0;
   background: none; text-align: left; cursor: pointer;
@@ -373,6 +390,10 @@ tbody tr:hover { background: #f5f6ff; }
   color: #9fb3d1; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .rnav-pop-list a:hover { background: #182030; color: #22d3ee; }
+/* 스웨거 문서 팝오버: 서비스명(굵게) + 링크. 문서 없는 서비스는 회색 비활성 행 */
+.rnav-pop-list b { color: #dfe7f1; font-weight: 700; margin-right: 6px; }
+.rnav-pop-list a b { color: #cfe0ff; }
+.rnav-pop-nodoc { padding: 6px 8px; font-size: 11.5px; color: #6b7486; }
 
 /* 헤더 커스텀 스냅샷 드롭다운 (날짜 + "현재" 칩 / 메타는 위에 플로팅 → 셀렉트가 안 밀림) */
 .snap { position: relative; display: flex; align-items: center; }

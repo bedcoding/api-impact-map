@@ -10,6 +10,7 @@ export interface Endpoint {
   displayPaths: string[];
   homepage?: string[]; // 이 API가 실제 호출되는 레진 라이브 웹 URL(들). 없을 수 있음.
   summary?: string; // API 설명(routing-docs). 행에 "무슨 API인지" 표시용.
+  services?: { name: string; swagger: string | null }[]; // 이 API를 제공하는 백엔드 서비스(들)와 스웨거 문서 링크. 링크는 없을 수 있음(BFF 등).
 }
 
 export interface Screen {

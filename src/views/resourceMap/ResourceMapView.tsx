@@ -512,6 +512,7 @@ function ColumnView({
                           <span className="rnav-smain mono">{a.path}</span>
                         </span>
                         {a.summary ? <span className="rnav-ssub">{a.summary}</span> : null}
+                        <ServiceChips services={a.services} />
                       </span>
                       <HomeLinkButton urls={a.homepage ?? []} />
                     </li>
@@ -523,6 +524,82 @@ function ColumnView({
         )}
       </div>
     </div>
+  );
+}
+
+// API 행의 백엔드 서비스 칩(설명 아래, 태그처럼). 스웨거 링크가 있으면 클릭 시 즉시 이동하지 않고
+// 라이브 페이지 링크와 동일하게 확인 팝오버를 띄운다 → 팝오버 안의 링크를 눌러야 새 탭 이동(실수 이동 방지).
+// 스웨거가 하나도 없으면(BFF 등) 그냥 회색 정적 칩. 복수 서비스면 칩이 여러 개 나열된다.
+function ServiceChips({ services }: { services?: Endpoint["services"] }) {
+  const pop = usePopover(services?.length ?? 0);
+  if (!services?.length) return null;
+  const hasDoc = services.some((s) => s.swagger);
+
+  // 문서 링크가 하나도 없으면 클릭 대상이 없으므로 정적 칩만.
+  if (!hasDoc) {
+    return (
+      <span className="rnav-svcs">
+        {services.map((s) => (
+          <span key={s.name} className="rnav-svc" title={`${s.name} · 스웨거 문서 없음`}>
+            <span className="rnav-svc-name">{s.name}</span>
+          </span>
+        ))}
+      </span>
+    );
+  }
+
+  return (
+    <>
+      <button
+        ref={pop.btnRef}
+        type="button"
+        className={`rnav-svcs as-btn${pop.open ? " on" : ""}`}
+        title="클릭 → 스웨거 문서 링크 열기"
+        onClick={pop.toggle}
+      >
+        {services.map((s) => (
+          <span key={s.name} className={`rnav-svc${s.swagger ? " has-doc" : ""}`} title={s.name}>
+            {s.swagger ? <LinkIcon /> : null}
+            <span className="rnav-svc-name">{s.name}</span>
+          </span>
+        ))}
+      </button>
+      {pop.open &&
+        pop.pos &&
+        createPortal(
+          <div
+            id="rnav-pop"
+            className="rnav-pop"
+            style={{ left: pop.pos.left, top: pop.pos.top }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="rnav-pop-head">스웨거 문서</div>
+            <ul className="rnav-pop-list">
+              {services.map((s) =>
+                s.swagger ? (
+                  <li key={s.name}>
+                    <a
+                      href={s.swagger}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={s.swagger}
+                      onClick={pop.close}
+                    >
+                      <b>{s.name}</b>
+                      {s.swagger.replace(/^https?:\/\//, "")}
+                    </a>
+                  </li>
+                ) : (
+                  <li key={s.name} className="rnav-pop-nodoc">
+                    <b>{s.name}</b>문서 없음
+                  </li>
+                ),
+              )}
+            </ul>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
@@ -545,10 +622,10 @@ function LinkIcon() {
   );
 }
 
-// 라이브 페이지 링크: 클릭해도 바로 이동하지 않고 URL 목록 팝오버를 띄운다(확인 후 각 URL 클릭 시 새 탭).
-// 팝오버는 컬럼의 overflow 클립을 피하려 body로 portal하고, 위치는 버튼 기준 fixed 좌표로 잡는다.
-// triggerLabel: 주면 고리 아이콘 대신 그 텍스트(=URL)를 트리거로 쓴다 — 화면 행 URL이 "실수 클릭 즉시 이동"되지 않게.
-function HomeLinkButton({ urls, triggerLabel }: { urls: string[]; triggerLabel?: string }) {
+// 확인 팝오버 공통 훅: 트리거 버튼(btnRef)을 누르면 body로 portal된 팝오버를 연다.
+// 컬럼 overflow 클립을 피하려 fixed 좌표로 띄우고, 외부 클릭·Esc·스크롤·리사이즈 시 닫는다.
+// rowCount: 팝오버 높이 추정용(위/아래 펼침 결정). 라이브 페이지 링크·스웨거 문서 칩이 공유한다.
+function usePopover(rowCount: number) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -578,14 +655,12 @@ function HomeLinkButton({ urls, triggerLabel }: { urls: string[]; triggerLabel?:
     };
   }, [open]);
 
-  if (!urls.length) return null;
-
   const toggle = (e: React.MouseEvent) => {
     e.stopPropagation(); // 드릴다운(행 클릭)과 분리
     const r = btnRef.current?.getBoundingClientRect();
     if (r) {
       const W = 320;
-      const estH = Math.min(320, 30 + urls.length * 30); // 팝오버 대략 높이
+      const estH = Math.min(320, 30 + rowCount * 30); // 팝오버 대략 높이
       const left = Math.max(8, Math.min(r.right - W, window.innerWidth - W - 8));
       // 아래로 펼치면 뷰포트를 넘는 경우 버튼 위로 펼친다.
       const top =
@@ -594,6 +669,15 @@ function HomeLinkButton({ urls, triggerLabel }: { urls: string[]; triggerLabel?:
     }
     setOpen((o) => !o);
   };
+
+  return { open, pos, btnRef, toggle, close: () => setOpen(false) };
+}
+
+// 라이브 페이지 링크: 클릭해도 바로 이동하지 않고 URL 목록 팝오버를 띄운다(확인 후 각 URL 클릭 시 새 탭).
+// triggerLabel: 주면 고리 아이콘 대신 그 텍스트(=URL)를 트리거로 쓴다 — 화면 행 URL이 "실수 클릭 즉시 이동"되지 않게.
+function HomeLinkButton({ urls, triggerLabel }: { urls: string[]; triggerLabel?: string }) {
+  const { open, pos, btnRef, toggle, close } = usePopover(urls.length);
+  if (!urls.length) return null;
 
   return (
     <>
@@ -631,13 +715,7 @@ function HomeLinkButton({ urls, triggerLabel }: { urls: string[]; triggerLabel?:
             <ul className="rnav-pop-list">
               {urls.map((u) => (
                 <li key={u}>
-                  <a
-                    href={u}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={u}
-                    onClick={() => setOpen(false)}
-                  >
+                  <a href={u} target="_blank" rel="noreferrer" title={u} onClick={close}>
                     {u.replace(/^https?:\/\//, "")}
                   </a>
                 </li>
