@@ -113,7 +113,7 @@ svg { display: block; }
 .pmeta { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
 .badge {
   display: inline-block; padding: 2px 7px; border-radius: 5px;
-  font-size: 10px; font-weight: 700; color: #fff; margin-right: 4px;
+  font-size: 10px; line-height: 14px; font-weight: 700; color: #fff; margin-right: 4px;
 }
 .badge.ios { background: var(--ios); } .badge.android { background: var(--android); }
 .badge.web { background: var(--web); }
@@ -122,6 +122,8 @@ svg { display: block; }
 .badge.m-get { background:#16a34a; } .badge.m-post { background:#2563eb; }
 .badge.m-put { background:#d97706; } .badge.m-delete { background:#dc2626; }
 .badge.m-patch { background:#7c3aed; }
+/* POST(4자)는 폰트를 살짝 줄여 GET/PUT/DEL/PAT(3자) 폭에 맞춘다. DELETE·PATCH는 methodLabel이 DEL·PAT로 축약 */
+.badge.m-post { font-size: 8px; letter-spacing: -.2px; }
 .section-h {
   font-size: 11px; font-weight: 700; color: var(--muted);
   text-transform: uppercase; letter-spacing: .04em;

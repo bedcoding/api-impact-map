@@ -4,7 +4,7 @@ import type { AppData, Edge, Endpoint, Platform, Screen } from "../../types";
 import { indexData } from "../../data";
 import { useDatasets } from "../../datasets";
 import { DataContext, useData } from "../../dataContext";
-import { PLATFORMS, methodCls } from "../../constants";
+import { PLATFORMS, methodCls, methodLabel } from "../../constants";
 import { Header } from "../../components/Header";
 import { DataControls } from "../../components/DataControls";
 import { PlatDots, PlatformFilter } from "../../components/shared";
@@ -506,7 +506,9 @@ function ColumnView({
                       onClick={() => onPick(colIndex, "ep", a.id)}
                     >
                       <LeftDot mode={leftMode} plats={a.platforms} source={src} />
-                      <span className={`badge ${methodCls(a.method)}`}>{a.method}</span>
+                      <span className={`badge ${methodCls(a.method)}`} title={a.method}>
+                        {methodLabel(a.method)}
+                      </span>
                       <span className="rnav-slabel">
                         <span className="rnav-srow">
                           <span className="rnav-smain mono">{a.path}</span>
